@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1d1240">
+<title>Stick Bastion</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div id="hud" class="hidden">
+    <div class="hbox" id="hpBox"><div class="lbl"><span>🏰 BASE</span><span id="hpTxt">400</span></div><div class="bar"><i id="hpFill"></i></div></div>
+    <div class="hbox" id="waveBox"><div id="waveTxt">WAVE 1</div><div class="bar"><i id="waveFill"></i></div></div>
+    <div class="hbox" id="coinBox"><span class="coin"></span><span id="coinTxt">0</span></div>
+    <button class="ibtn pe" id="speedBtn" aria-label="Speed up">▶▶</button>
+    <button class="ibtn pe" id="pauseBtn" aria-label="Pause">❚❚</button>
+    <button id="baseBtn" class="round pe" aria-label="Base upgrades"><span>🏰</span><small>BASE</small></button>
+    <div id="breakBar" class="pe hidden"><span>Next wave in <b id="breakT">10</b>s</span><button id="callBtn">CALL NOW ▶ <small id="callBonus"></small></button></div>
+    <button id="strikeBtn" class="round pe hidden" aria-label="Airstrike"><span>✈</span><small>STRIKE</small></button>
+  </div>
+  <div id="slotPop" class="pop hidden"></div>
+  <div id="basePop" class="pop hidden" style="left:.8em;bottom:6.2em"></div>
+
+  <div id="hub" class="screen">
+    <div class="topbar">
+      <button class="hb" id="backBtn" aria-label="Back">←</button>
+      <div class="htitle"><i></i><span id="hubTitle">CAREER MODE</span><i></i></div>
+      <div class="chips">
+        <div class="chip" title="Credits"><span class="crc">C</span><b id="crTxt">0</b></div>
+        <div class="chip" title="Stars"><span class="sti">★</span><b id="stTxt">0/48</b></div>
+        <button class="hb" id="sndBtn1" aria-label="Sound">🔊</button>
+      </div>
+    </div>
+    <div class="tab" id="tab_career">
+      <div class="mapwrap"><canvas id="mapCv"></canvas><div id="nodes"></div></div>
+      <aside class="side" id="lvlPanel"></aside>
+    </div>
+    <div class="tab hidden" id="tab_upgrades"><div class="tabbox"><div class="upgs" id="upgList"></div></div></div>
+    <div class="tab hidden" id="tab_guns"><div class="tabbox"><div class="guns" id="gunList"></div></div></div>
+    <div class="tab hidden" id="tab_survival">
+      <div class="tabbox surv">
+        <h2>ENDLESS SURVIVAL</h2>
+        <p>Waves never stop and bosses show up every 5 waves. Pick your base:</p>
+        <div class="maps" id="mapPick"></div>
+        <div class="best" id="bestTxt"></div>
+      </div>
+    </div>
+    <nav class="bnav">
+      <button data-tab="career"><span>🗺️</span>CAREER</button>
+      <button data-tab="upgrades"><span>⏫</span>UPGRADES</button>
+      <button data-tab="guns"><span>🔫</span>GUNS</button>
+      <button data-tab="survival"><span>♾️</span>SURVIVAL</button>
+    </nav>
+    <button id="playBtn" class="playbig">PLAY <b>▶</b></button>
+  </div>
+
+  <div id="win" class="screen dim hidden">
+    <div class="panel wpanel">
+      <div class="wl" id="winLvl"></div>
+      <h1 class="title" style="font-size:3.2em">LEVEL COMPLETE!</h1>
+      <div class="stars3" id="winStars"></div>
+      <div class="wobj" id="winObj"></div>
+      <div class="wcr">Credits earned <span class="crc">C</span> <b id="winCr">0</b></div>
+      <div><button class="btn" id="nextBtn">NEXT LEVEL ▶</button><button class="btn alt" id="retryBtn">⟲ RETRY</button><button class="btn alt" id="mapBtn">MAP</button></div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen dim hidden">
+    <div class="panel">
+      <h1 class="title" style="font-size:3em">PAUSED</h1>
+      <div style="margin-top:1em">
+        <button class="btn" id="resumeBtn">▶ RESUME</button><br>
+        <button class="btn alt small" id="sndBtn2">🔊 Sound: On</button>
+        <button class="btn alt small" id="quitBtn">⟲ Main menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="over" class="screen dim hidden">
+    <div class="panel">
+      <h1 class="title" style="font-size:3.2em;color:#ff7a5c">THE BASE HAS FALLEN</h1>
+      <div class="stats">
+        <div>Waves survived<b id="oWaves">0</b></div>
+        <div>Kills<b id="oKills">0</b></div>
+        <div>Critical hits<b id="oHeads">0</b></div>
+      </div>
+      <div class="best" id="oBest"></div>
+      <div style="margin-top:.8em"><button class="btn" id="againBtn">⟲ PLAY AGAIN</button><button class="btn alt" id="menuBtn">MENU</button></div>
+    </div>
+  </div>
+</div>
+<div id="rotate"><div class="phn">📱</div><div>Turn your phone sideways for the best view.</div><button class="btn small" id="rotOk">Play anyway</button></div>
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/state.js"></script>
+<script src="js/gunners.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/waves.js"></script>
+<script src="js/career.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/mapart.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/basetray.js"></script>
+<script src="js/tutorial.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
