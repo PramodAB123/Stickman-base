@@ -60,7 +60,7 @@ function update(dt){
   S.shake=Math.max(0,S.shake-dt*30);S.wallHit=Math.max(0,S.wallHit-dt);
   if(S.banner){S.banner.t+=dt;if(S.banner.t>2.4)S.banner=null}
   if(S.strikeCD>0&&S.mode==='play')S.strikeCD-=dt;
-  if(S.demo){S.demoT-=dt;if(S.demoT<=0&&S.enemies.length<6){S.demoT=rand(.7,1.5);{const L=['rifle_grunt','blade_raider','heavy_gunner','shield_brute','mech_walker','wing_raider','scout_drone','spiked_beast','healer_support','attack_drone'];spawnEnemy(L[Math.floor(Math.random()*L.length)],true)}}}
+  // menus show a calm, still backdrop: the base and its gunners on watch, no enemies or gunfire
   for(const e of S.enemies)updateEnemy(e,dt);
   updateWave(dt);
   updateGunners(dt);
