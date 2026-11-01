@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#1d1240">
 <title>Stick Bastion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800;1,900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="stage">
   <canvas id="cv"></canvas>
   <div id="hud" class="hidden">
-    <div class="hbox" id="hpBox"><div class="lbl"><span>🏰 BASE</span><span id="hpTxt">400</span></div><div class="bar"><i id="hpFill"></i></div></div>
-    <div class="hbox" id="waveBox"><div id="waveTxt">WAVE 1</div><div class="bar"><i id="waveFill"></i></div></div>
+    <div class="hbox" id="hpBox"><span class="hpIc">🏰</span><div class="lbl"><span>BASE HP</span><span id="hpTxt">400</span></div><div class="bar"><i id="hpFill"></i></div></div>
+    <div class="hbox" id="waveBox"><div id="waveTxt">WAVE 1</div><div id="waveSub"></div><div class="bar"><i id="waveFill"></i></div></div>
     <div class="hbox" id="coinBox"><span class="coin"></span><span id="coinTxt">0</span></div>
     <button class="ibtn pe" id="speedBtn" aria-label="Speed up">▶▶</button>
     <button class="ibtn pe" id="pauseBtn" aria-label="Pause">❚❚</button>
     <button id="baseBtn" class="round pe" aria-label="Base upgrades"><span>🏰</span><small>BASE</small></button>
-    <div id="breakBar" class="pe hidden"><span>Next wave in <b id="breakT">10</b>s</span><button id="callBtn">CALL NOW ▶ <small id="callBonus"></small></button></div>
+    <div id="breakBar" class="pe hidden"><div class="nw"><span class="clk">⏱</span><span class="nwt"><small>NEXT WAVE IN</small><span><b id="breakT">10</b>s</span></span></div><button id="callBtn">CALL NOW ▶ <small id="callBonus"></small></button></div>
     <button id="strikeBtn" class="round pe hidden" aria-label="Airstrike"><span>✈</span><small>STRIKE</small></button>
   </div>
   <div id="slotPop" class="pop hidden"></div>
@@ -107,6 +109,7 @@
 <script src="js/menu.js"></script>
 <script src="js/basetray.js"></script>
 <script src="js/tutorial.js"></script>
+<script src="js/hudskin.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
