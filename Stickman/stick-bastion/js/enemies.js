@@ -21,7 +21,8 @@ const ET = {
   juggernaut: { name: 'Juggernaut', h: 112, hp: 1080, spd: 24, dmg: 45, rate: 1.6, coin: 55, cost: 8, w: .6, beh: 'melee', crit: [.5, .25] },
   sky_reaper: { name: 'Sky Reaper', h: 72, hp: 260, spd: 60, dmg: 20, rate: 2, coin: 45, cost: 7, w: .6, beh: 'shoot', fly: 1, alt: [150, 230], crit: [.32, .4], muz: [.05, .45], shot: 'bullet' },
   warlord_mech: { name: 'Warlord Mech', h: 200, hp: 820, spd: 22, dmg: 55, rate: 1.6, coin: 250, cost: 0, w: 0, beh: 'melee', boss: 1, crit: [.43, .25], muz: [.12, .15], shot: 'shell', srate: 4.5, sdmg: 16 },
-  void_dragon: { name: 'Void Dragon', h: 230, hp: 880, spd: 40, dmg: 18, rate: 2.4, coin: 320, cost: 0, w: 0, beh: 'bomb', boss: 1, fly: 1, alt: [200, 240], crit: [.42, .25], muz: [.4, .3] },
+  void_dragon: { name: 'Void Dragon', h: 300, hp: 880, spd: 40, dmg: 18, rate: 2.4, coin: 320, cost: 0, w: 0, beh: 'bomb', boss: 1, fly: 1, alt: [200, 240], crit: [.35, .42], muz: [.27, .48] },
+  goliath_mech: { name: 'Goliath War Mech', h: 250, hp: 900, spd: 24, dmg: 16, rate: 3.2, coin: 320, cost: 0, w: 0, beh: 'shoot', boss: 1, crit: [.41, .43], muz: [.18, .15], shot: 'shell', volley: 3, srate: 5, sdmg: 14, stopR: [235, 300] },
 };
 const UNLOCK = {
   rifle_grunt: 1, blade_raider: 2, heavy_gunner: 3, shield_brute: 4, bomb_runner: 5, mech_walker: 5, scout_drone: 6, wing_raider: 7, stealth_assassin: 8,
@@ -30,8 +31,10 @@ const UNLOCK = {
 // overall toughness: raise these to make every enemy stronger
 const FAST = 1.2, tough = n => clamp(2.2 - .12 * n, 1.15, 2.2);
 const hpMul = n => 1 + .22 * (n - 1) + .02 * (n - 1) * (n - 1) + .0015 * (n - 1) * (n - 1) * (n - 1);
-const bossFor = n => n % 10 === 0 ? 'void_dragon' : 'warlord_mech';
+const bossFor = n => n % 10 === 0 ? 'goliath_mech' : 'warlord_mech';
 for (const k in ET) { const d = ET[k]; d.id = k; d.img = loadImg('assets/enemies/' + k + '.webp'); d.aspect = ENEMY_SIZE[k][0] / ENEMY_SIZE[k][1] }
+// the Void Dragon plays frame animations from strips (6 frames each): flying loop and death
+ET.void_dragon.anim = { fly: loadImg('assets/enemies/void_dragon_fly.webp'), die: loadImg('assets/enemies/void_dragon_die.webp'), n: 6, cw: 380, ch: 220, dch: 240 };
 
 let uid = 0;
 function spawnEnemy(type, demo) {
@@ -142,6 +145,7 @@ function updateEnemy(e, dt) {
 function smokePuff(x, y, col) { for (let i = 0; i < 8; i++)S.parts.push({ type: 'smoke', x: x + rand(-14, 14), y: y + rand(-14, 14), vx: rand(-40, 40), vy: rand(-50, 0), life: .6, max: .6, size: rand(8, 14), g: 0, col }) }
 function ramBlow(e) { e.dead = true; explode(e.core.x, e.core.y, 90, 40); hitWall(e.d.dmg * (1 + .04 * (S.wave - 1)) * (S.demo ? 0 : 1), WALL.x1, Math.min(GY - 40, e.y)); enemyDeath(e, { ix: 300 }); }
 function fireShell(e) {
+  if (e.d.volley && !e.inVolley) { e.inVolley = 1; for (let i = 0; i < e.d.volley; i++)fireShell(e); e.inVolley = 0; e.fireAt = e.t; return }
   const m = e.muz || e.core, shell = e.d.shot === 'shell', tx = rand(WALL.x1 - 40, WALL.x1 - 4), ty = WALL.top + rand(-6, 80), g = shell ? 480 : 120; e.sw = 1;
   const T = Math.abs(tx - m.x) / (shell ? rand(420, 500) : rand(700, 800));
   S.eproj.push({ kind: shell ? 'shell' : 'bolt', x: m.x, y: m.y, vx: (tx - m.x) / T, vy: (ty - m.y) / T - .5 * g * T, g, dmg: (e.d.sdmg || e.d.dmg) * (1 + .05 * (S.wave - 1)) });
@@ -173,7 +177,8 @@ var RIG = {
   spiked_beast: { k: 'quad', y: .66, amp: .26 },
   wing_raider: { k: 'wing', a: .37, b: .63, py: .38, amp: .38, fr: 10 },
   sky_reaper: { k: 'wing', a: .29, b: .56, py: .35, amp: .3, fr: 7, aura: '255,60,60' },
-  void_dragon: { k: 'wing', a: .33, b: .65, py: .32, amp: .26, fr: 4, aura: '200,80,255' },
+  void_dragon: { k: 'frames', fps: 9, aura: '200,80,255' },
+  goliath_mech: { k: 'walker', aura: '255,110,40', muz2: [.72, .3] },
   scout_drone: { k: 'rotor', pts: [[.12, .1, .11], [.88, .1, .11]] },
   attack_drone: { k: 'jet', pts: [[.97, .42]] },
   bomber_drone: { k: 'jet', pts: [[.97, .33]] },
@@ -200,6 +205,8 @@ function rigParts(d, col) {
   return partCache[k] = P;
 }
 function drawRig(g, e, R, col) {
+  if (R && R.k === 'frames') { drawFrames(g, e, R, col); return }
+  if (R && R.k === 'walker') { drawWalker(g, e, R, col); return }
   const w = e.w, h = e.h, src = col ? tinted(e.d, col) : e.d.img;
   const P = R && R.k !== 'rotor' && R.k !== 'jet' ? rigParts(e.d, col) : null;
   if (!P) { g.drawImage(src, -w / 2, -h, w, h); return }
@@ -233,7 +240,7 @@ function drawEnemy(g, e) {
   g.save(); g.globalAlpha = alpha; g.translate(x0 + e.w / 2, y0 + e.h); g.rotate(tilt); g.scale(1 + .08 * q, 1 - .08 * q + br);
   drawRig(g, e, R);
   const fx = e.flash > 0 ? '#ffffff' : e.slowT > 0 ? '#8fe8ff' : e.acidT > 0 ? '#9cff3a' : e.burnT > 0 ? '#ff7a2a' : null;
-  if (fx) { g.globalAlpha = alpha * (e.flash > 0 ? .45 : .28); drawRig(g, e, R, fx) }
+  if (fx) { g.globalAlpha = alpha * (e.flash > 0 ? (d.boss ? .2 : .45) : (d.boss ? .15 : .28)); drawRig(g, e, R, fx) }
   if (R && !e.cloak && (R.k === 'rotor' || R.k === 'jet')) {
     g.globalAlpha = alpha; g.globalCompositeOperation = 'lighter';
     for (const p of R.pts) {
@@ -255,6 +262,44 @@ function drawEnemy(g, e) {
   if (e.shield > 0 && e.shieldMax) { const w = 34, x = e.core.x - w / 2, y = e.topY - 14; g.fillStyle = '#cfe6ff'; g.fillRect(x, y, w * e.shield / e.shieldMax, 3) }
 }
 const tintCache = {};
+// tint any image (cached by key) for hit flash / slow / burn overlays
+function tintImg(k, im, col) { k += col; if (tintCache[k]) return tintCache[k]; if (!im.naturalWidth) return im; const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; const g = c.getContext('2d'); g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, c.width, c.height); return tintCache[k] = c }
+// heavy walker drawn from one detailed picture: the hull rocks over planted feet (shear + squash at the feet line),
+// each step thumps dust and shakes the screen, the core glow pulses, and firing kicks the whole mech back with muzzle flashes
+function drawWalker(g, e, R, col) {
+  const w = e.w, h = e.h, walk = e.state === 'walk', ph = e.t * 2.6 + e.phase, s = Math.sin(ph);
+  const ft = e.fireAt != null ? e.t - e.fireAt : 9, kick = ft < .35 ? Math.sin(ft / .35 * Math.PI) : 0;
+  const shear = walk ? s * .035 : Math.sin(e.t * 1.3) * .006, sq = walk ? 1 - Math.abs(s) * .025 : 1 + Math.sin(e.t * 2) * .006;
+  if (!col && walk && !S.demo) { const st = Math.floor(ph / Math.PI); if (e.step !== st) { e.step = st; S.shake = Math.max(S.shake, 2.5); for (let i = 0; i < 6; i++)S.parts.push({ type: 'smoke', x: e.x + rand(-w * .4, w * .4), y: GY - 4, vx: rand(-50, 50), vy: rand(-40, -10), life: rand(.5, .9), max: .9, size: rand(8, 16), g: 0, col: '#6a5248' }) } }
+  g.save(); g.translate(kick * w * .035, 0); g.transform(1, 0, -shear, sq, 0, 0);
+  g.drawImage(col ? tinted(e.d, col) : e.d.img, -w / 2, -h, w, h);
+  if (!col) {
+    g.globalCompositeOperation = 'lighter';
+    const glow = (fx, fy, r, a, c1, c2) => { const x = -w / 2 + fx * w, y = -h + fy * h, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + c1 + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + c2 + ',0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill() };
+    glow(e.d.crit[0], e.d.crit[1], h * .16, .35 + .25 * Math.sin(e.t * 4), '255,200,90', '255,90,20');
+    if (kick > 0) { for (const m of [e.d.muz, R.muz2]) glow(m[0] - .03, m[1], h * (.22 + .1 * kick), .95 * kick, '255,240,170', '255,110,20') }
+  }
+  g.restore();
+}
+// frame-animated flyer: loops the fly strip; glows at the mouth right after it breathes fire
+function drawFrames(g, e, R, col) {
+  const A = e.d.anim, w = e.w, h = e.h;
+  let k = A.fly ? 'fly' : 'walk', f = Math.floor(e.t * R.fps + e.phase) % A.n, sw = 1, sh = 1;
+  if (A.walk) {
+    const ft = e.fireAt != null ? e.t - e.fireAt : 9;
+    if (ft < .55) { k = 'fire'; f = 2 + Math.min(3, Math.floor(ft / .55 * 4)); sw = A.fcw / A.cw; sh = A.fch / A.ch }
+    else if (e.state !== 'walk') { k = 'idle'; f = Math.floor(e.t * 6 + e.phase) % A.n }
+  }
+  const im = A[k]; if (!im.naturalWidth) { g.drawImage(col ? tinted(e.d, col) : e.d.img, -w / 2, -h, w, h); return }
+  const src = col ? tintImg(e.d.id + k, im, col) : im, cw = A.cw * sw, ch = A.ch * sh, dw = w * sw, dh = h * sh;
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(src, f * cw, 0, cw, ch, -dw / 2, -dh, dw, dh);
+  if (A.fly && !col && e.sw > 0) {
+    const mx = -w / 2 + e.d.muz[0] * w, my = -h + e.d.muz[1] * h, r = h * .16 * (0.6 + e.sw * .6), gr = g.createRadialGradient(mx, my, 0, mx, my, r);
+    gr.addColorStop(0, 'rgba(255,230,255,' + .9 * e.sw + ')'); gr.addColorStop(.4, 'rgba(230,80,255,' + .6 * e.sw + ')'); gr.addColorStop(1, 'rgba(160,40,255,0)');
+    g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); g.restore()
+  }
+}
 function tinted(d, col) {
   const k = d.id + col; if (tintCache[k]) return tintCache[k]; const im = d.img; if (!im.naturalWidth) return im; const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
   const g = c.getContext('2d'); g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, c.width, c.height); return tintCache[k] = c
@@ -267,6 +312,8 @@ function enemyDeath(e, o) {
   for (let i = 0; i < 6; i++)S.parts.push({ type: 'smoke', x: c.x + rand(-14, 14) * s, y: c.y, vx: rand(-40, 40), vy: rand(-80, -20), life: rand(.8, 1.4), max: 1.4, size: rand(12, 22) * s, g: 0 });
   const cols = ['#2a2433', '#433b52', '#ff5a3c', '#e8a33a'];
   for (let i = 0; i < 6 + s * 4; i++)S.parts.push({ type: 'debris', x: c.x + rand(-12, 12) * s, y: c.y + rand(-10, 10) * s, vx: rand(-220, 280) + (o.ix || 0) * .25, vy: rand(-460, -150), life: rand(1.2, 2), max: 2, size: rand(4, 9) * s, g: 1100, rot: rand(0, 6), vr: rand(-14, 14), col: cols[i % 4], floor: GY - 2 });
+  // the Void Dragon falls to the ground and plays its death frames instead of breaking apart
+  if (e.d.anim) { const A = e.d.anim, k = e.h / A.ch; S.parts.push({ type: 'ddie', A, x: e.x, y: e.d.fly ? e.y + e.h * .32 : e.y + 2, vx: 0, vy: 60, g: 900, floor: GY + 4, w: A.cw * k, h: A.dch * k, life: 3.2, max: 3.2 }); return }
   // break the sprite apart into tumbling chunks
   const fly = e.d.fly, nx = e.w > e.h * 1.3 ? 3 : 2, ny = e.d.boss ? 3 : 2, ox = e.x - e.w / 2, oy = fly ? e.y - e.h / 2 : e.y - e.h;
   for (let i = 0; i < nx; i++)for (let j = 0; j < ny; j++) {

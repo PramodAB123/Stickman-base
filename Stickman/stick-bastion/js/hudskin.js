@@ -3,8 +3,10 @@
 (function(){
   const sub=$('waveSub');
   setInterval(()=>{if(!S||S.demo)return;
-    let t;if(S.career){const w=careerWave(),n=S.career.waves;t='WAVE '+Math.min(n,S.waveActive?w:w+1)+' / '+n}
-    else t='WAVE '+(S.waveActive?S.wave:S.wave+1);
+    // during a wave: how many enemies are still to beat; between waves: which wave is next
+    let t;if(S.waveActive){const left=S.queue.length+S.enemies.filter(e=>!e.dead).length;t=left+(left===1?' ENEMY LEFT':' ENEMIES LEFT')}
+    else if(S.career){const w=careerWave(),n=S.career.waves;t='NEXT: WAVE '+Math.min(n,w+1)+' / '+n}
+    else t='NEXT: WAVE '+(S.wave+1);
     if(sub.textContent!==t)sub.textContent=t},150);
   // split the caption: the part after the first " TO " (or the last two words) is drawn in yellow
   const cap=document.getElementById('tutCap');if(!cap)return;

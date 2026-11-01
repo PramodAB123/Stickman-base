@@ -11,7 +11,7 @@ for (let k = 1; k <= 16; k++) {
   const ch = Math.floor((k - 1) / 4), bossLv = k % 4 === 0;
   LEVELS.push({
     k, ch, map: CHAPTERS[ch].id, waves: 4 + Math.floor((k - 1) / 3), off: Math.round((k - 1) * .65),
-    boss: bossLv ? (k % 8 === 0 ? 'void_dragon' : 'warlord_mech') : null, coins: Math.round((100 + (k - 1) * 50 + (k - 1) * (k - 1) * 2) / 10) * 10, reward: 60 + k * 20
+    boss: bossLv ? (k % 8 === 0 ? 'goliath_mech' : 'warlord_mech') : null, coins: k === 1 ? 160 : Math.round((100 + (k - 1) * 50 + (k - 1) * (k - 1) * 2) / 10) * 10, reward: 60 + k * 20
   });
 }
 // what a level throws at you (used for the preview)

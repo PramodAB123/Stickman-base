@@ -87,7 +87,8 @@ function explodeFx(x,y,r,w){
 function sparks(x,y,n,col){for(let i=0;i<n;i++){const a=rand(0,6.28),v=rand(100,320);S.parts.push({type:'spark',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(.12,.25),max:.25,size:2,g:300,col})}}
 function blood(x,y,ix,iy,n){for(let i=0;i<n;i++)S.parts.push({type:'drop',x,y,vx:ix*rand(60,260)+rand(-60,60),vy:iy*rand(60,200)+rand(-200,-20),life:rand(.4,.8),max:.8,size:rand(1.5,3.2),g:1000,col:'#b8202e'})}
 function dust(x,y){for(let i=0;i<4;i++)S.parts.push({type:'smoke',x,y:y-2,vx:rand(-40,40),vy:rand(-50,-10),life:.4,max:.4,size:rand(4,8),g:0,col:'#d8a070'})}
-function floater(x,y,text,col,size){S.floaters.push({x,y,text,col,t:0,size:size||1})}
+// floating text (kept away from the screen edges so it never gets cut off)
+function floater(x,y,text,col,size){S.floaters.push({x:clamp(x,24+text.length*6*(size||1),W-24-text.length*6*(size||1)),y:Math.max(110,y),text,col,t:0,size:size||1})}
 
 const RAG_LINKS=[[0,1],[1,2],[2,3],[3,4],[2,5],[5,6],[1,7],[7,8],[1,9],[9,10],[0,2]];
 function spawnRag(e,o){

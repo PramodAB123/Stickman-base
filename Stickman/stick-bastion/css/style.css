@@ -352,3 +352,34 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 /* bar scales with the game screen itself (not capped like the rest of the HUD) so it always fills the dirt strip */
 #stage{container-type:inline-size}
 #baseBar{font-size:1.5cqw}
+
+/* ---------- finishing touches: dialogs, buttons, transitions ---------- */
+/* dialogs (pause, level complete, game over) share the HUD look: navy panel, gold edge, condensed italic type */
+.screen.dim{backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:dimIn .25s ease-out}
+.screen.dim .panel{position:relative;background:linear-gradient(165deg,var(--nv1,#1b2a5c),var(--nv2,#0d1532));border:2px solid rgba(255,210,58,.75);border-radius:1em;
+  box-shadow:0 0 0 3px rgba(10,14,34,.85),0 0 2.2em rgba(255,190,60,.18),0 1.2em 3em rgba(0,0,0,.6);padding:1.2em 1.8em 1.4em;animation:panelIn .38s cubic-bezier(.2,1.4,.4,1) both;overflow:visible}
+.screen.dim .panel::before{content:'';position:absolute;left:1.2em;right:1.2em;top:-2px;height:.3em;border-radius:0 0 .3em .3em;
+  background:repeating-linear-gradient(-45deg,#ffd23a 0 .5em,#1a1a1a .5em 1em);opacity:.9}
+.screen.dim .title{font-family:var(--hf,inherit);font-style:italic;font-weight:900;letter-spacing:.02em;text-transform:uppercase;color:var(--gd,#ffd23a);
+  text-shadow:0 .06em 0 #7a3b00,0 0 .5em rgba(255,190,60,.35);margin:.1em 0 .2em}
+#over .title{color:#ff6b4f!important;text-shadow:0 .06em 0 #5a0f05,0 0 .5em rgba(255,80,50,.4)}
+.screen.dim .wl{font-family:var(--hf,inherit);font-style:italic;letter-spacing:.14em;color:var(--cy,#3aa8ff)}
+.stats>div{font-family:var(--hf,inherit);font-style:italic;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#b9c6ea;font-size:.95em}
+.stats b{font-size:2em;line-height:1.05;color:var(--gd,#ffd23a);text-shadow:0 .06em 0 #7a3b00}
+.wobj div{transition:color .3s}
+.wobj .ok{color:#ffe27a}
+/* buttons: chunkier, condensed italic, consistent press feel */
+.btn{font-family:var(--hf,inherit);font-style:italic;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin:.25em .2em;transition:transform .08s,filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(.15em) scale(.97)}
+.btn.alt{background:linear-gradient(#2c4384,#18265a);color:#e7eeff;border:1px solid #4f7fe0;box-shadow:0 .22em 0 #0b1230,0 .4em 1em rgba(0,0,0,.4)}
+.btn.alt:active{box-shadow:0 .07em 0 #0b1230}
+#resumeBtn{font-size:1.45em;padding:.6em 2.4em;margin-bottom:.4em}
+/* hub tabs and side panels ease in when you switch */
+.tabbox,.side,.mapwrap{animation:tabIn .28s ease-out}
+.bnav button{transition:transform .1s,filter .15s}
+.bnav button:active{transform:scale(.95)}
+@keyframes dimIn{from{opacity:0}to{opacity:1}}
+@keyframes panelIn{from{opacity:0;transform:translateY(1.2em) scale(.9)}to{opacity:1;transform:none}}
+@keyframes tabIn{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen.dim,.screen.dim .panel,.tabbox,.side,.mapwrap{animation:none}}
