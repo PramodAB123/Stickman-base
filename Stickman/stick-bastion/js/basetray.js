@@ -1,11 +1,8 @@
 'use strict';
-// Base upgrades as a bar of direct buttons along the bottom of the screen (replaces the BASE button and its popup)
+// Base upgrades (only Repair and Airstrike) as a bar of direct buttons along the bottom of the screen (replaces the BASE button and its popup)
 function baseItems(){
-  const out=[],rc=Math.round((30+S.wave*6)/5)*5,missing=S.wallMax-S.wallHP,live=S.mines.filter(m=>!m.used).length;
+  const out=[],rc=Math.round((30+S.wave*6)/5)*5,missing=S.wallMax-S.wallHP;
   out.push({ic:'🔧',sn:'REPAIR',d:'Repair wall: +35% base HP',col:'#5be27f',cost:missing>.5?rc:null,done:'FULL',act:()=>{S.wallHP=Math.min(S.wallMax,S.wallHP+S.wallMax*.35)}});
-  out.push({ic:'🧱',sn:'WALL',d:'Reinforce wall: +150 max HP',lv:S.wallLvl,max:6,col:'#ff9b52',cost:S.wallLvl<6?180*(S.wallLvl+1):null,act:()=>{S.wallLvl++;S.wallMax+=150;S.wallHP+=150}});
-  out.push({ic:'🪵',sn:'SPIKES',d:'Spike trap: slows and hurts attackers near the wall',lv:S.spikes,max:3,col:'#c98a4a',cost:S.spikes<3?[220,420,700][S.spikes]:null,act:()=>{S.spikes++}});
-  out.push({ic:'💣',sn:'MINES',d:'Land mines x3 ('+live+' / 9 placed)',col:'#b77cff',cost:live<=6?150:null,done:'FULL',act:()=>{for(let i=0;i<3;i++)S.mines.push({x:rand(WALL.x1+330,W-140),used:false})}});
   out.push({ic:'✈️',sn:'AIR',d:S.strikeLvl?'Airstrike: more bombs, faster recharge':'Airstrike: unlocks the STRIKE button',lv:S.strikeLvl,max:3,col:'#4fb4ff',cost:S.strikeLvl<3?(S.strikeLvl?350*S.strikeLvl+150:450):null,act:()=>{S.strikeLvl++;S.strikeCD=0}});
   return out;
 }

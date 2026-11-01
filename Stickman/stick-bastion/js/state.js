@@ -2,7 +2,8 @@
 // Game state and base/map setup
 const WALL={x0:20,x1:262,top:396};
 const SLOTS=[];
-const BS=.66,BX=-14;
+// base size on screen (BS) and left offset (BX)
+const BS=.9,BX=-24;
 function applyMap(id){
   if(!MAPS[id])id='industrial';const m=MAP=MAPS[id];
   const gx=x=>BX+(x-m.ox)*BS,gy=y=>GY+2-(m.h-y)*BS;
