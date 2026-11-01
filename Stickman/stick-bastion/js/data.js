@@ -29,7 +29,7 @@ const WEAPONS=[
 const WMAP={};WEAPONS.forEach(w=>WMAP[w.id]=w);
 const MAXLV=5;
 // all guns: damage and fire-rate multipliers (lower = weaker guns)
-const GUN_DMG=.9,GUN_RATE=.85;
+const GUN_DMG=.99,GUN_RATE=.85;
 const wDmg=(w,l)=>w.dmg*(1+.3*l)*(1+.06*perk('dmg'))*GUN_DMG;
 const gHP=l=>Math.round(150*(1+.25*l));
 const repairCost=s=>Math.max(10,Math.round((s.maxHp-s.hp)*.35+S.wave*2));
