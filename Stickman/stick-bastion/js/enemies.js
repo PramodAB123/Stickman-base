@@ -38,7 +38,7 @@ ET.void_dragon.anim = { fly: loadImg('assets/enemies/void_dragon_fly.webp'), die
 
 let uid = 0;
 function spawnEnemy(type, demo) {
-  const d = ET[type], n = Math.max(1, S.wave), hm = demo ? 1 : hpMul(n) * (d.boss ? .8 : 1) * (d.boss ? 1.15 : tough(n)) * (S.career ? 1 / (1 + .07 * Math.max(0, n - 6)) : 1), sm = 1 + Math.min(.3, .015 * n);
+  const d = ET[type], n = Math.max(1, S.wave), hm = demo ? 1 : hpMul(n) * (d.boss ? .8 : 1) * (d.boss ? 1.15 : tough(n)) * (S.career ? 1 / (1 + .07 * Math.max(0, n - 6)) : 1) * 1.6, sm = 1 + Math.min(.3, .015 * n);
   const sc = d.boss ? 1 : rand(.94, 1.06), h = d.h * sc, w = h * d.aspect;
   const e = {
     id: ++uid, type, d, x: W + w / 2 + rand(10, 70), y: GY, w, h, s: h / 60, hp: d.hp * hm, maxHp: d.hp * hm, spd: d.spd * rand(.9, 1.1) * (demo ? 1 : sm * FAST), state: 'walk', phase: rand(0, 6.28),
