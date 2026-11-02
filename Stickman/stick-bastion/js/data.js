@@ -25,6 +25,11 @@ const WEAPONS=[
   {id:'rocket',name:'Rocket Launcher',price:560,dmg:125,rate:.8,spread:.015,speed:950,grav:60,pellets:1,pierce:1,radius:110,recoil:14,shake:3,range:2000,turn:3.5,headCh:0,col:'#ff5a4f',snd:'rocket',desc:'Huge explosions'},
   {id:'gravity',name:'Gravity Gun',price:640,dmg:60,rate:.9,spread:.01,speed:900,pellets:1,pierce:1,radius:110,push:true,slow:.3,recoil:9,shake:2.5,range:1300,turn:4,headCh:0,col:'#a060ff',fx:'170,100,255',snd:'grav',desc:'Vortex flings enemies back'},
   {id:'minigun',name:'Minigun',price:720,dmg:10,rate:18,spread:.09,speed:2200,pellets:1,pierce:2,recoil:2.5,shake:.4,range:1100,turn:3,headCh:.15,col:'#ffc13a',bc:'255,190,60',snd:'minigun',desc:'A storm of lead'},
+  // premium guns: bought once in the Armory with C credits (cr), then deployed in battle for coins like any other gun
+  {id:'fbite',name:'Frostbite Rifle',prem:900,price:760,dmg:17,rate:2,spread:.07,speed:1500,pellets:3,pierce:1,radius:48,freeze:1.1,recoil:5,shake:.6,range:1000,turn:5,headCh:0,col:'#7fd8ff',fx:'140,225,255',snd:'ice',desc:'Ice shards freeze, then shatter'},
+  {id:'vdrake',name:'Void Drake',prem:1200,price:820,dmg:8,rate:9,speed:1e6,hit:'vbeam',pierce:3,range:1150,recoil:1,shake:0,turn:5,headCh:0,col:'#c04bff',bc:'200,90,255',snd:'laser',desc:'Void beam pierces 3 enemies'},
+  {id:'glance',name:'Gravity Lance',prem:1500,price:900,dmg:70,rate:.5,spread:.01,speed:700,pellets:1,pierce:1,radius:105,well:.8,recoil:10,shake:2,range:1300,turn:4,headCh:0,col:'#a35cff',fx:'170,95,255',snd:'grav',desc:'Black hole pulls enemies in'},
+  {id:'solar',name:'Solar Cannon',prem:1900,price:980,dmg:105,rate:.4,charge:.7,speed:1150,pellets:1,pierce:6,life:1.6,burn:9,recoil:15,shake:3,range:1500,turn:3.5,headCh:0,col:'#ffb02e',bc:'255,180,50',snd:'plasma',desc:'Charged blast burns through 6 enemies'},
 ];
 const WMAP={};WEAPONS.forEach(w=>WMAP[w.id]=w);
 const MAXLV=5;
@@ -39,7 +44,8 @@ const upCost=(w,l)=>Math.round((w.price*.55+60)*(l+1)/10)*10;
 
 
 // Gun sprites: [width, height, bore y, muzzle x, grip x, grip y, length] in source pixels
-const GUNM={blaster: [353, 130, 50, 353, 90, 100, 96], plasma: [362, 137, 60, 362, 90, 100, 104], flame: [372, 135, 50, 290, 160, 100, 104], frost: [361, 139, 58, 300, 88, 110, 100], rocket: [359, 138, 50, 359, 135, 100, 106], laser: [368, 131, 50, 275, 75, 90, 102], shock: [369, 137, 52, 290, 75, 100, 100], minigun: [363, 143, 60, 335, 40, 70, 108], railgun: [361, 135, 55, 361, 105, 95, 110], acid: [364, 141, 50, 290, 155, 100, 104], saw: [351, 163, 83, 273, 75, 120, 102], gravity: [363, 140, 55, 255, 80, 100, 104]};
+const GUNM={blaster: [353, 130, 50, 353, 90, 100, 96], plasma: [362, 137, 60, 362, 90, 100, 104], flame: [372, 135, 50, 290, 160, 100, 104], frost: [361, 139, 58, 300, 88, 110, 100], rocket: [359, 138, 50, 359, 135, 100, 106], laser: [368, 131, 50, 275, 75, 90, 102], shock: [369, 137, 52, 290, 75, 100, 100], minigun: [363, 143, 60, 335, 40, 70, 108], railgun: [361, 135, 55, 361, 105, 95, 110], acid: [364, 141, 50, 290, 155, 100, 104], saw: [351, 163, 83, 273, 75, 120, 102], gravity: [363, 140, 55, 255, 80, 100, 104],
+  vdrake: [360, 166, 88, 300, 115, 118, 120], glance: [360, 215, 105, 322, 70, 150, 118], fbite: [360, 153, 60, 330, 70, 100, 116], solar: [360, 166, 74, 330, 65, 122, 120]};
 const GUNIMG={},GSP={};
 for(const id in GUNM){GUNIMG[id]=loadImg('assets/guns/'+id+'.webp');const [w,h,by,tx,gx,gy,len]=GUNM[id],k=len*.85/w,px=gx+40;
   GSP[id]={x0:-px*k,y0:-by*k,w:w*k,h:h*k,tip:(tx-px)*k,grip:[-40*k,(gy-by)*k]}}

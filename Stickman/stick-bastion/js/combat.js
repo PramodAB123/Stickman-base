@@ -42,17 +42,32 @@ function updateBullets(dt){
     for(const e of S.enemies){
       if(e.dead||b.hit.includes(e.id))continue;
       const h=hitTest(e,ax,ay,b.x,b.y);if(!h)continue;
-      if(b.ex){b.dead=true;explode(b.x,b.y,b.radius,b.dmg,w);break}
+      if(b.ex){b.dead=true;bBoom(b.x,b.y,b,w);break}
       b.hit.push(e.id);
       const sp=Math.hypot(b.vx,b.vy)||1,ix=b.vx/sp,iy=b.vy/sp;
-      if(applyHit(e,h,b.dmg,ix,iy,b.x,b.y,w))b.pierce=0;else b.pierce--;
+      if(applyHit(e,h,b.dmg,ix,iy,b.x,b.y,w)&&!w.charge)b.pierce=0;else b.pierce--;
       if(b.pierce<=0){b.dead=true;break}
     }
     if(b.dead)continue;
-    if(b.y>=GY){b.dead=true;if(b.ex)explode(b.x,GY-4,b.radius,b.dmg,w);else if(b.w!=='flame')dust(b.x,GY)}
-    else if(b.x>W+60||b.y<-80||b.x<-40||b.life<=0){b.dead=true;if(b.ex&&b.x<W+60&&b.x>0)explode(b.x,b.y,b.radius,b.dmg,w)}
+    if(b.y>=GY){b.dead=true;if(b.ex)bBoom(b.x,GY-4,b,w);else if(b.w!=='flame')dust(b.x,GY)}
+    else if(b.x>W+60||b.y<-80||b.x<-40||b.life<=0){b.dead=true;if(b.ex&&b.x<W+60&&b.x>0)bBoom(b.x,b.y,b,w)}
+    if(b.w==='solar'&&Math.random()<dt*50)S.parts.push({type:'fire',x:b.x-b.vx*.01,y:b.y+rand(-5,5),vx:rand(-40,40),vy:rand(-60,0),life:rand(.2,.35),max:.35,size:rand(4,8),g:0});
   }
   S.bullets=S.bullets.filter(b=>!b.dead);
+  updateWells(dt);
+}
+// a bullet that explodes: the Gravity Lance opens a black hole first, everything else blows up at once
+function bBoom(x,y,b,w){if(w.well){(S.wells||(S.wells=[])).push({x,y:Math.min(y,GY-40),t:0,max:w.well,r:b.radius,dmg:b.dmg,w});SND.play('grav')}else explode(x,y,b.radius,b.dmg,w)}
+function updateWells(dt){
+  if(!S.wells||!S.wells.length)return;
+  for(const h of S.wells){
+    h.t+=dt;const pull=Math.min(1,h.t/.25);
+    for(const e of S.enemies){if(e.dead)continue;const dx=h.x-e.core.x,d=Math.abs(dx);if(d>h.r*1.5||d<6)continue;
+      const v=(e.d.boss?40:190)*pull*(1-d/(h.r*1.6));e.x+=Math.sign(dx)*Math.min(d,v*dt);damageEnemy(e,h.dmg*.25*dt,{dot:true})}
+    if(Math.random()<dt*40){const a=rand(0,6.28),r=h.r*rand(.6,1);S.parts.push({type:'spark',x:h.x+Math.cos(a)*r,y:h.y+Math.sin(a)*r*.6,vx:-Math.cos(a)*r*2.6,vy:-Math.sin(a)*r*1.5,life:.35,max:.35,size:2,g:0,col:'#d6a8ff'})}
+    if(h.t>=h.max){h.done=true;explode(h.x,h.y,h.r,h.dmg,h.w)}
+  }
+  S.wells=S.wells.filter(h=>!h.done);
 }
 function damageEnemy(e,dmg,o){
   if(e.dead)return;e.hp-=dmg;if(!o.dot)e.flash=.08;
@@ -66,17 +81,18 @@ function explode(x,y,r,dmg,w){
     let dd=1e9;for(const b of e.B)if(b[5]!=='shield')dd=Math.min(dd,Math.sqrt(segPt2(b[0],b[1],b[2],b[3],x,y))-b[4]);dd=Math.max(0,dd);
     if(dd<r){const f=clamp(1-dd/(r*1.2),.3,1),nx=(ex-x)/(d||1),ny=(ey-y)/(d||1);
       if(e.shield>0)e.shield=Math.max(0,e.shield-dmg*f*(w&&w.acid?1.4:.6));
+      let sh=1;if(w&&w.freeze&&e.slowT>0&&e.slowF>=.85){sh=1.6;for(let i=0;i<8;i++)S.parts.push({type:'chip',x:ex+rand(-12,12),y:ey+rand(-15,10),vx:rand(-200,200),vy:rand(-320,-80),life:rand(.4,.7),max:.7,size:rand(2.5,4.5),g:900,col:'#d8f6ff'})}
       if(w)applyStatus(e,w,dmg);
       const room=clamp((W-220-e.x)/300,0,1);
-      damageEnemy(e,dmg*f,{blast:true,ix:((w&&w.push?700/Math.sqrt(e.s*e.s*e.s):0)*f+Math.abs(nx)*600*f+150)*room,iy:-520*f-120+ny*100,hx:x,hy:y});}
+      damageEnemy(e,dmg*f*sh,{blast:true,ix:((w&&w.push?700/Math.sqrt(e.s*e.s*e.s):0)*f+Math.abs(nx)*600*f+150)*room,iy:-520*f-120+ny*100,hx:x,hy:y});}
   }
 }
 function explodeFx(x,y,r,w){
-  if(w&&w.fx){const c=w.fx;S.shake=Math.max(S.shake,3+r*.03);SND.play(w.id==='acid'?'goo':'explode');
+  if(w&&w.fx){const c=w.fx;S.shake=Math.max(S.shake,3+r*.03);SND.play(w.id==='acid'?'goo':w.freeze?'ice':'explode');
     S.parts.push({type:'boom',x,y,life:.22,max:.22,size:r*.85,g:0,col:c});
     S.parts.push({type:'ring',x,y,life:.45,max:.45,size:r,g:0,col:c});
     if(w.push)S.parts.push({type:'ring',x,y,life:.6,max:.6,size:r*1.4,g:0,col:c,inv:1});
-    for(let i=0;i<20;i++){const a=rand(0,6.28),v=rand(80,380);S.parts.push({type:w.id==='acid'?'drop':'spark',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-(w.id==='acid'?160:0),life:rand(.25,.6),max:.6,size:w.id==='acid'?rand(2,4):2,g:w.id==='acid'?900:100,col:'rgb('+c+')'})}
+    for(let i=0;i<20;i++){const a=rand(0,6.28),v=rand(80,380);S.parts.push({type:w.id==='acid'?'drop':w.freeze?'chip':'spark',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-(w.id==='acid'?160:0),life:rand(.25,.6),max:.6,size:w.id==='acid'?rand(2,4):2,g:w.id==='acid'?900:100,col:'rgb('+c+')'})}
     for(let i=0;i<5;i++)S.parts.push({type:'smoke',x:x+rand(-20,20),y:y+rand(-20,10),vx:rand(-60,60),vy:rand(-90,-20),life:rand(.6,1.1),max:1.1,size:rand(12,20),g:0,col:w.id==='acid'?'#4f6a20':undefined});
     return}
   S.shake=Math.max(S.shake,6+r*.04);SND.play('explode');

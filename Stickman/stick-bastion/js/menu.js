@@ -1,14 +1,16 @@
 'use strict';
-// Start screen hub: Home, Upgrades, Guns, Career map and Survival tabs
-const TABS=['career','upgrades','guns','survival'];
+// Start screen hub: Career map, Upgrades, Guns, Premium and Survival tabs
+const TABS=['career','upgrades','guns','premium','survival'];
 let hubTab=store.get('tab','career');if(!TABS.includes(hubTab))hubTab='career';
-// island layout on the chapter map (fractions of the map area): centre, size, node path, landmark spot, label spot
-const ISLES=[
-  {c:[.25,.36],r:[.23,.13],nodes:[[.08,.40],[.18,.44],[.29,.42],[.40,.37]],lm:[.27,.27],lab:[.03,.04]},
-  {c:[.74,.33],r:[.23,.13],nodes:[[.58,.35],[.68,.40],[.79,.42],[.91,.38]],lm:[.77,.23],lab:[.56,.04]},
-  {c:[.74,.80],r:[.23,.12],nodes:[[.92,.83],[.81,.87],[.70,.86],[.59,.82]],lm:[.79,.71],lab:[.56,.53]},
-  {c:[.26,.81],r:[.23,.12],nodes:[[.41,.84],[.30,.88],[.19,.87],[.08,.83]],lm:[.22,.72],lab:[.03,.53]},
-];
+// island layout on the chapter map: one long strip, chapters left to right (fractions of the strip's width / height)
+const MAPW=2.2; // strip width as a multiple of the visible map area
+const ISLES=[0,1,2,3].map(i=>{const cx=.125+.25*i,cy=i%2?.46:.4,rw=.1;
+  return{c:[cx,cy],r:[rw,.145],nodes:[-.7,-.24,.24,.7].map((f,k)=>[cx+f*rw,cy+[.08,.11,.11,.06][k]]),lm:[cx+.004,cy-.1],lab:[cx-rw*.98,.04]}});
+// a chapter is hidden in smoke until the player reaches it (a star on the previous chapter's boss level, or on any of its own levels)
+const chapterOpen=c=>c===0||CAR.stars[c*4-1]>0||CAR.stars.slice(c*4,c*4+4).some(x=>x>0);
+// you can always see the chapters you've reached plus the next one; everything past that is hidden in smoke
+const chapterSeen=c=>c===0||chapterOpen(c)||chapterOpen(c-1);
+const seenCount=()=>[0,1,2,3].filter(chapterSeen).length;
 const NODEPOS=ISLES.flatMap(s=>s.nodes);
 const THEME={
   desert:{top:['#ffc27a','#e0803e'],cliff:['#c0602f','#4e1e15'],glow:'255,160,70'},
@@ -21,12 +23,13 @@ function showTab(t){
   hubTab=t;store.set('tab',t);
   TABS.forEach(x=>{$('tab_'+x).classList.toggle('hidden',x!==t);document.querySelector(`.bnav [data-tab="${x}"]`).classList.toggle('on',x===t)});
   $('hub').classList.toggle('see',t==='survival');
-  $('hubTitle').textContent={upgrades:'UPGRADES',guns:'ARMORY',career:'CAREER MODE',survival:'SURVIVAL'}[t];
+  $('hubTitle').textContent={upgrades:'UPGRADES',guns:'ARMORY',premium:'PREMIUM',career:'CAREER MODE',survival:'SURVIVAL'}[t];
   $('backBtn').classList.toggle('hidden',t==='career');
   $('playBtn').innerHTML=t==='survival'?'SURVIVE <b>▶</b>':'PLAY <b>▶</b>';
-  if(t==='career'){drawMap();renderNodes();renderPanel()}
+  if(t==='career'){drawMap();renderNodes();renderPanel();centerMap(CAR.sel)}
   if(t==='upgrades')renderUpg();
   if(t==='guns')renderGuns();
+  if(t==='premium')renderPrem();
   if(t==='survival'){const m=store.get('map','industrial');if(MAP.id!==m){applyMap(m);S=freshState(true)}renderMapPick()}
   hubChips();
 }
@@ -36,10 +39,22 @@ $('backBtn').onclick=()=>{SND.play('click');showTab('career')};
 
 function renderNodes(){
   const cur=nextLevel();
-  $('nodes').innerHTML=ISLES.map((s,i)=>`<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span>${CHAPTERS[i].icon}</span><div><small>CHAPTER ${i+1}</small>${CHAPTERS[i].name}</div></div>`).join('')+
-  LEVELS.map((L,i)=>{const [x,y]=NODEPOS[i],st=CAR.stars[i],lk=!unlocked(i);
+  $('nodes').innerHTML=ISLES.map((s,i)=>chapterSeen(i)?`<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span>${CHAPTERS[i].icon}</span><div><small>CHAPTER ${i+1}</small>${CHAPTERS[i].name}</div></div>`:'').join('')+
+  LEVELS.map((L,i)=>{if(!chapterSeen(L.ch))return'';const [x,y]=NODEPOS[i],st=CAR.stars[i],lk=!unlocked(i);
     return `<button class="node${st?' done':''}${i===cur&&!st?' cur':''}${lk?' lock':''}${L.boss?' boss':''}${i===CAR.sel?' sel':''}" data-i="${i}" style="left:${x*100}%;top:${y*100}%" aria-label="Level ${L.k}">
       <span class="hex"><span class="num">${lk?'🔒':L.boss?'☠':L.k}</span></span><span class="ns">${[0,1,2].map(j=>`<i class="${j<st?'on':''}">★</i>`).join('')}</span></button>`}).join('');
+}
+// scroll the strip so a level sits in the middle of the view
+function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=4?1e9:Math.max(0,(.25*n+.04)*$('mapIn').clientWidth-w.clientWidth)}
+$('mapWrap').addEventListener('scroll',()=>{const w=$('mapWrap'),m=mapMaxScroll();if(w.scrollLeft>m)w.scrollLeft=m});
+function centerMap(i,smooth){const w=$('mapWrap'),x=NODEPOS[i][0]*$('mapIn').clientWidth-w.clientWidth/2;w.scrollTo({left:Math.min(mapMaxScroll(),Math.max(0,x)),behavior:smooth?'smooth':'auto'})}
+// drag / wheel scrolling (touch scrolls natively); a drag never counts as a tap on a level
+{const w=$('mapWrap');let down=null,moved=false;
+  w.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;down={x:e.clientX,y:e.clientY,s:w.scrollLeft};moved=false});
+  window.addEventListener('pointermove',e=>{if(!down)return;const f=stageFrac(e.clientX,e.clientY),f0=stageFrac(down.x,down.y),dx=(f.x-f0.x)*stage.offsetWidth;if(Math.abs(dx)>6){moved=true;w.classList.add('drag')}if(moved)w.scrollLeft=down.s-dx});
+  window.addEventListener('pointerup',()=>{down=null;w.classList.remove('drag')});
+  w.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false}},true);
+  w.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){w.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
 }
 $('nodes').addEventListener('click',e=>{const b=e.target.closest('.node');if(!b)return;SND.unlock();const i=+b.dataset.i;
   if(!unlocked(i)){SND.play('nope');return}CAR.sel=i;saveCar();SND.play('click');renderNodes();renderPanel()});
@@ -70,11 +85,30 @@ $('upgList').addEventListener('click',e=>{const b=e.target.closest('[data-u]');i
 // ---------- guns ----------
 function renderGuns(){
   const md=Math.max(...WEAPONS.map(w=>w.dmg*w.rate*(w.pellets||1)));
-  $('gunList').innerHTML=WEAPONS.map(w=>{const dps=w.dmg*w.rate;
-    return `<div class="gcard" style="--gc:${w.col}"><img alt="" src="${gunIcon(w.id)}"><b>${w.name}</b><span>${w.desc}</span>
+  const card=w=>{const dps=w.dmg*w.rate*(w.pellets||1),own=owned(w.id);
+    return `<div class="gcard${w.prem?' prem':''}${own?'':' lockd'}" style="--gc:${w.col}"><img alt="" src="${gunIcon(w.id)}"><b>${w.name}</b><span>${w.desc}</span>
       <div class="gbar"><small>DMG</small><i style="width:${Math.min(100,w.dmg/125*100)}%"></i></div><div class="gbar"><small>DPS</small><i style="width:${Math.min(100,dps/md*100)}%"></i></div>
-      <em><span class="coin"></span> ${w.price}</em></div>`}).join('');
+      <em><span class="coin"></span> ${w.price}</em>
+      ${w.prem?(own?'<div class="gown">OWNED</div>':`<button class="act" data-buy="${w.id}" ${CAR.cr<w.prem?'disabled':''}><span class="crc">C</span> ${w.prem}</button>`):''}</div>`};
+  $('gunList').innerHTML=WEAPONS.filter(w=>!w.prem).map(card).join('');
 }
+// ---------- premium armory ----------
+const PERK={fbite:'Freeze',vdrake:'Pierce 3',glance:'Black hole',solar:'Burn'};
+function renderPrem(){
+  const mx=k=>Math.max(...WEAPONS.map(k));
+  const mDmg=mx(w=>w.dmg*(w.pellets||1)),mRate=mx(w=>w.rate),mRng=mx(w=>w.range);
+  const bar=(l,v)=>`<div class="pst"><small>${l}</small><div class="seg">${Array.from({length:5},(_,i)=>`<i class="${i<Math.max(1,Math.round(v*5))?'on':''}"></i>`).join('')}</div></div>`;
+  $('premList').innerHTML=WEAPONS.filter(w=>w.prem).map(w=>{const own=owned(w.id),can=CAR.cr>=w.prem;
+    return `<div class="pcard${own?' own':''}" style="--gc:${w.col}">
+      <div class="part">${own?'<span class="pok" title="Owned"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>':''}<img alt="" src="${gunIcon(w.id)}"></div>
+      <div class="pnm"><b>${w.name}</b><span class="ptag">${PERK[w.id]||'Premium'}</span></div><span class="pd">${w.desc}</span>
+      ${bar('DAMAGE',w.dmg*(w.pellets||1)/mDmg)}${bar('RATE',Math.sqrt(w.rate/mRate))}${bar('RANGE',w.range/mRng)}
+      <div class="pft"><span class="pdc"><span class="coin"></span> ${w.price} <small>to deploy</small></span>
+      ${own?'<div class="gown">OWNED</div>':`<button class="act pbuy" data-buy="${w.id}" ${can?'':'disabled'}><span class="crc">C</span> ${w.prem}</button>`}</div></div>`}).join('');
+}
+$('premList').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b||b.disabled)return;SND.unlock();const w=WMAP[b.dataset.buy];
+  if(owned(w.id))return;if(CAR.cr<w.prem){SND.play('nope');return}
+  CAR.cr-=w.prem;CAR.own.push(w.id);saveCar();SND.play('buy');renderPrem();hubChips()});
 // ---------- play ----------
 $('playBtn').onclick=()=>{SND.unlock();
   if(hubTab==='survival'){newGame(null);return}

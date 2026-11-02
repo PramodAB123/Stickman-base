@@ -29,11 +29,14 @@ function ik(sx,sy,tx,ty,a,b,bend){
 }
 
 // ---------- gunners ----------
+// reach is the same from every post: back posts get the extra distance to the front deck added
+function gRange(g,w){const f=S.slots[0];return w.range+Math.hypot(f.x-g.x,f.y-g.y)}
 function pickTarget(g,w,J){
+  const rng=gRange(g,w);
   let best=null,bs=-1e9;
   for(const e of S.enemies){
     if(e.dead||e.cloak||e.x>W-12)continue;
-    const d=Math.hypot(e.core.x-J.pivot.x,e.core.y-J.pivot.y);if(d>w.range)continue;
+    const d=Math.hypot(e.core.x-J.pivot.x,e.core.y-J.pivot.y);if(d>rng)continue;
     let sc=-e.x;
     if(w.id==='railgun')sc=e.hp+(e.d.boss?4000:0)-e.x*.08;
     if(w.radius){let n=0;for(const o of S.enemies)if(!o.dead&&Math.abs(o.x-e.x)<90)n++;sc=n*200-e.x}
@@ -64,16 +67,24 @@ function updateGunners(dt){
       const ft=dist/w.speed,drop=w.grav?.5*w.grav*ft*ft:0;
       const want=clamp(Math.atan2(py-drop-J.pivot.y,lx-J.pivot.x),-1.3,1.5);
       const step=w.turn*dt;g.aim+=clamp(want-g.aim,-step,step);
-      if(Math.abs(want-g.aim)<(w.hit==='chain'?.14:w.id==='flame'?.12:.05)&&g.cd<=0){fireGun(g,gunnerJ(g),w);g.cd+=1/(wRate(w,g.lvl)*(g.boost>0?2:1));if(g.cd<0)g.cd=0}
-    }else{g.aim+=(-.08-g.aim)*Math.min(1,dt*2);if(g.cd<0)g.cd=0}
+      if(Math.abs(want-g.aim)<(w.hit==='chain'?.14:w.id==='flame'?.12:w.hit==='vbeam'?.1:.05)&&g.cd<=0){
+        if(w.charge&&(g.chg=(g.chg||0)+dt)<w.charge){if(g.chg<=dt)SND.play('charge')}
+        else{g.chg=0;fireGun(g,gunnerJ(g),w);g.cd+=1/(wRate(w,g.lvl)*(g.boost>0?2:1));if(g.cd<0)g.cd=0}}
+    }else{g.aim+=(-.08-g.aim)*Math.min(1,dt*2);if(g.cd<0)g.cd=0;g.chg=0}
   }
 }
 function fireGun(g,J,w){
-  const dmg=wDmg(w,g.lvl),tx=J.tip.x,ty=J.tip.y,ca=Math.cos(g.aim),sa=Math.sin(g.aim);
+  const dmg=wDmg(w,g.lvl),tx=J.tip.x,ty=J.tip.y,ca=Math.cos(g.aim),sa=Math.sin(g.aim),rng=gRange(g,w);
   if(w.hit==='beam'){
-    const ex=tx+ca*w.range,ey=ty+sa*w.range;
+    const ex=tx+ca*rng,ey=ty+sa*rng;
     for(const e of S.enemies){if(e.dead)continue;const h=hitTest(e,tx,ty,ex,ey);if(h)applyHit(e,h,dmg,ca,sa,e.core.x+rand(-6,6),e.core.y+rand(-6,6),w)}
     S.parts.push({type:'beam',x:tx,y:ty,x2:ex,y2:ey,life:.09,max:.09,g:0,col:'192,112,255'});
+  }else if(w.hit==='vbeam'){
+    let ex=tx+ca*rng,ey=ty+sa*rng;const hits=[];
+    for(const e of S.enemies){if(e.dead)continue;const h=hitTest(e,tx,ty,ex,ey);if(h)hits.push([e,h,(e.core.x-tx)*ca+(e.core.y-ty)*sa])}
+    hits.sort((a,b)=>a[2]-b[2]);
+    let n=0;for(const [e,h,d] of hits){const stop=applyHit(e,h,dmg,ca,sa,e.core.x+rand(-6,6),e.core.y+rand(-6,6),w);if(stop||++n>=w.pierce){ex=tx+ca*(d+10);ey=ty+sa*(d+10);break}}
+    S.parts.push({type:'beam',x:tx,y:ty,x2:ex,y2:ey,life:.11,max:.11,g:0,col:'190,80,255',w:10});
   }else if(w.hit==='chain'){
     let cur=g.tgt,f=1;const pts=[{x:tx,y:ty}],done=[];
     for(let k=0;k<w.chain&&cur;k++){
@@ -85,12 +96,12 @@ function fireGun(g,J,w){
     S.parts.push({type:'bolt',pts,x:tx,y:ty,life:.16,max:.16,g:0,col:'110,235,255'});
   }else{
     for(let i=0;i<(w.pellets||1);i++){
-      const a=g.aim+rand(-(w.spread||0),w.spread||0),sp=w.speed*(w.id==='flame'?rand(.85,1.15):1),life=w.life||1.4;
-      S.bullets.push({x:tx,y:ty,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,dmg,pierce:w.pierce||1,hit:[],life,max:life,w:w.id,ex:!!w.radius,radius:w.radius||0,grav:w.grav||0,spin:0});
+      const a=g.aim+rand(-(w.spread||0),w.spread||0),sp=w.speed*(w.id==='flame'?rand(.85,1.15):1),life=w.life?w.life*rng/w.range:1.4;
+      S.bullets.push({x:tx,y:ty,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,dmg,pierce:w.pierce||1,hit:[],life,max:life,w:w.id,ex:!!w.radius,radius:w.radius||0,grav:w.grav||0,spin:rand(0,6)});
     }
   }
   g.rec=w.recoil;g.alt=!g.alt;S.shake=Math.max(S.shake,w.shake);
-  if(w.id!=='flame'&&w.id!=='laser')S.parts.push({type:'flash',x:tx,y:ty,a:g.aim,life:.06,max:.06,size:w.radius||w.id==='railgun'?1.5:1,g:0,col:w.col});
+  if(w.id!=='flame'&&w.id!=='laser'&&w.id!=='vdrake')S.parts.push({type:'flash',x:tx,y:ty,a:g.aim,life:.06,max:.06,size:w.radius||w.id==='railgun'?1.5:1,g:0,col:w.col});
   if(w.id==='blaster'||w.id==='minigun'||w.id==='railgun')S.parts.push({type:'shell',x:J.gun.x-4,y:J.gun.y-6,vx:rand(-120,-40),vy:rand(-260,-160),life:1.1,max:1.1,size:2.5,g:1100,floor:g.y-g.crate-2,rot:0,vr:rand(-20,20)});
   if(w.id==='rocket'||w.id==='plasma')for(let i=0;i<6;i++)S.parts.push({type:'smoke',x:J.gun.x-24,y:J.gun.y,vx:rand(-120,-40),vy:rand(-40,20),life:.7,max:.7,size:rand(8,14),g:0});
   SND.play(w.snd||w.id);
@@ -99,6 +110,7 @@ function applyStatus(e,w,dmg){
   const m=dmg/w.dmg;
   if(w.burn){e.burnT=2;e.burnD=w.burn*m}
   if(w.acid){e.acidT=3;e.acidD=Math.max(e.acidT>0&&e.acidD||0,w.acid*m)}
+  if(w.freeze){const f=e.d.boss?.4:.9;e.slowF=e.slowT>0?Math.max(e.slowF,f):f;e.slowT=Math.max(e.slowT>0?e.slowT:0,w.freeze*(e.d.boss?.5:1))}
   if(w.slow){e.slowF=e.slowT>0?Math.max(e.slowF,w.slow):w.slow;e.slowT=w.id==='gravity'?1.6:1.4}
 }
 function applyHit(e,h,dmg,ix,iy,x,y,w){
@@ -153,6 +165,7 @@ function drawGunnerBody(g,s){
   g.fillStyle=w.col;g.fillRect(J.head.x-J.hr-2,J.head.y-2.5,J.hr*2+5,1.2);
   g.fillStyle='#fff';g.beginPath();g.arc(J.head.x+J.hr*.45,J.head.y+.5,1.7,0,7);g.fill();
   if(s.stun>0){const t=S.time;g.strokeStyle='rgba(200,110,255,.9)';g.lineWidth=2;for(let i=0;i<3;i++){const a=t*6+i*2.1;g.beginPath();g.arc(J.head.x+Math.cos(a)*9,J.head.y-14+Math.sin(a)*3,2.5,0,7);g.stroke()}}
+  if(s.chg>0&&w.charge){const f=Math.min(1,s.chg/w.charge),r=4+11*f;g.save();g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(J.tip.x,J.tip.y,0,J.tip.x,J.tip.y,r*2);gr.addColorStop(0,'rgba(255,250,220,.95)');gr.addColorStop(.35,'rgba(255,180,50,.8)');gr.addColorStop(1,'rgba(255,120,20,0)');g.fillStyle=gr;g.beginPath();g.arc(J.tip.x,J.tip.y,r*2,0,7);g.fill();g.restore()}
   if(s.w==='railgun'&&s.tgt&&!s.tgt.dead&&S.mode==='play'){g.strokeStyle='rgba(120,200,255,.3)';g.lineWidth=1;g.setLineDash([6,6]);g.beginPath();g.moveTo(J.tip.x,J.tip.y);g.lineTo(J.tip.x+Math.cos(s.aim)*900,J.tip.y+Math.sin(s.aim)*900);g.stroke();g.setLineDash([])}
 }
 

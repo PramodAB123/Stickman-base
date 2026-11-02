@@ -35,8 +35,9 @@ function tutGo(i){
 }
 // canvas point (logical) or DOM element -> % of the stage
 function slotPt(i,dy){const s=S.slots[i];return{x:s.x/W*100,y:(s.y-s.crate+dy)/H*100,r:4.5}}
-function elPt(sel){const el=document.querySelector(sel);if(!el||!el.offsetParent)return null;const a=el.getBoundingClientRect(),b=stage.getBoundingClientRect();
-  return{x:(a.left+a.width/2-b.left)/b.width*100,y:(a.top+a.height/2-b.top)/b.height*100,r:Math.min(Math.max(a.width,a.height),a.height*2.2)/2/b.width*100+1.5}}
+function elPt(sel){const el=document.querySelector(sel);if(!el||!el.offsetParent)return null;const a=el.getBoundingClientRect(),f=stageFrac(a.left+a.width/2,a.top+a.height/2);
+  const ew=el.offsetWidth,eh=el.offsetHeight,sw=stage.offsetWidth;
+  return{x:f.x*100,y:f.y*100,r:Math.min(Math.max(ew,eh),eh*2.2)/2/sw*100+1.5}}
 function tutHold(){return TUT.on}
 function tutTick(){
   if(!TUT.on)return;

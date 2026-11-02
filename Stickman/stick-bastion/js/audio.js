@@ -28,6 +28,7 @@ const SND={ctx:null,on:store.get('snd',true),noise:null,last:{},master:null,
       case'laser':this.tone(1700,.06,'square',.04,900);break;
       case'saw':this.tone(560,.25,'sawtooth',.07,260);this.nz(.15,3000,3,.14,'bandpass');break;
       case'plasma':this.tone(760,.3,'sawtooth',.11,120);this.nz(.25,1200,1,.28);break;
+      case'charge':this.tone(220,.62,'sawtooth',.05,880);this.tone(440,.62,'sine',.05,1320);break;
       case'grav':this.tone(130,.5,'sine',.4,40);this.tone(620,.4,'triangle',.07,150);break;
       case'explode':this.nz(1,380,.6,.9);this.tone(70,.7,'sine',.55,28);break;
       case'hit':this.tone(820,.04,'square',.04,420);break;

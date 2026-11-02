@@ -47,19 +47,23 @@ function openSlot(i){
   $('basePop').classList.add('hidden');
   S.popSlot=i;renderSlotPop();$('slotPop').classList.remove('hidden');placeSlotPop();$('slotPop').classList.remove('hidden');SND.play('click');
 }
-function weaponGrid(cur,discount){
-  return '<div class="wgrid">'+WEAPONS.map(w=>{const cost=Math.max(0,w.price-discount);
-    return `<button class="wopt${w.id===cur?' cur':''}" data-w="${w.id}" ${w.id===cur?'data-lock="1" data-cost="0"':'data-cost="'+cost+'"'}><img alt="" src="${gunIcon(w.id)}"><span>${w.name}</span><span class="s">${w.desc}</span><span class="c">${w.id===cur?'EQUIPPED':'<span class="coin"></span> '+cost}</span></button>`}).join('')+'</div>';
+// 3 regular guns per post (one cheap, one mid, one heavy); owned premium guns fit every post
+const POST_GUNS=[['blaster','saw','minigun'],['flame','acid','rocket'],['frost','laser','plasma'],['shock','railgun','gravity']];
+function weaponGrid(cur,discount,si){
+  const pg=POST_GUNS[si]||POST_GUNS[0];
+  const list=WEAPONS.filter(w=>w.id===cur||owned(w.id)&&(w.prem||pg.includes(w.id)));
+  return '<div class="wgrid'+(list.length>12?' w4':'')+'">'+list.map(w=>{const cost=Math.max(0,w.price-discount);
+    return `<button class="wopt${w.id===cur?' cur':''}${w.prem?' prem':''}" data-w="${w.id}" ${w.id===cur?'data-lock="1" data-cost="0"':'data-cost="'+cost+'"'}><img alt="" src="${gunIcon(w.id)}"><span>${w.name}</span><span class="s">${w.desc}</span><span class="c">${w.id===cur?'EQUIPPED':'<span class="coin"></span> '+cost}</span></button>`}).join('')+'</div>';
 }
 function renderSlotPop(mode){
   const s=S.slots[S.popSlot],p=$('slotPop');
   const head=(title,sub)=>`<div class="ph"><h4>${title}<span class="sub2">${sub}</span></h4><button class="x" data-act="close" aria-label="Close">✕</button></div>`;
   p.classList.remove('gpop');
   if(!s.w){
-    p.innerHTML=head('Deploy a gunner',s.name+' · aims and fires on its own')+weaponGrid(null,0);
+    p.innerHTML=head('Deploy a gunner',s.name+' · aims and fires on its own')+weaponGrid(null,0,S.popSlot);
   }else if(mode==='swap'){
     const refund=Math.round(s.invested*.6);
-    p.innerHTML=head('Change gun','Old gun trades in for '+refund+' coins')+weaponGrid(s.w,refund)+'<button class="act alt" data-act="back">← Back</button>';
+    p.innerHTML=head('Change gun','Old gun trades in for '+refund+' coins')+weaponGrid(s.w,refund,S.popSlot)+'<button class="act alt" data-act="back">← Back</button>';
   }else{
     const w=WMAP[s.w],lv=s.lvl,max=lv>=MAXLV,c=max?0:upCost(w,lv);
     const canSell=!(S.slots.filter(x=>x.w).length===1);
@@ -165,7 +169,7 @@ $('callBtn').onclick=()=>{SND.unlock();callNow()};
 $('sndBtn1').onclick=toggleSnd;$('sndBtn2').onclick=toggleSnd;
 $('strikeBtn').addEventListener('click',()=>{SND.unlock();callStrike()});
 
-function toLogical(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+function toLogical(e){const f=stageFrac(e.clientX,e.clientY);return{x:f.x*W,y:f.y*H}}
 function slotAt(x,y){
   let best=-1,bd=1e9;
   S.slots.forEach((s,i)=>{const fy=s.y-s.crate;if(x>s.x-34&&x<s.x+34&&y>fy-(s.w?90:130)&&y<fy+18){const d=Math.abs(x-s.x)+Math.abs(y-(fy-40))*.5;if(d<bd){bd=d;best=i}}});

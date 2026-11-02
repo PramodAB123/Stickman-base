@@ -40,11 +40,12 @@
       </div>
     </div>
     <div class="tab" id="tab_career">
-      <div class="mapwrap"><canvas id="mapCv"></canvas><div id="nodes"></div></div>
+      <div class="mapwrap" id="mapWrap"><div id="mapIn"><canvas id="mapCv"></canvas><div id="nodes"></div></div></div>
       <aside class="side" id="lvlPanel"></aside>
     </div>
     <div class="tab hidden" id="tab_upgrades"><div class="tabbox"><div class="upgs" id="upgList"></div></div></div>
     <div class="tab hidden" id="tab_guns"><div class="tabbox"><div class="guns" id="gunList"></div></div></div>
+    <div class="tab hidden" id="tab_premium"><div class="tabbox"><div class="phead"><div><h2>PREMIUM ARMORY</h2><p>Unlock once with credits. Owned premium guns can be deployed at any post, in every battle.</p></div></div><div class="pguns" id="premList"></div></div></div>
     <div class="tab hidden" id="tab_survival">
       <div class="tabbox surv">
         <h2>ENDLESS SURVIVAL</h2>
@@ -54,10 +55,11 @@
       </div>
     </div>
     <nav class="bnav">
-      <button data-tab="career"><span>🗺️</span>CAREER</button>
-      <button data-tab="upgrades"><span>⏫</span>UPGRADES</button>
-      <button data-tab="guns"><span>🔫</span>GUNS</button>
-      <button data-tab="survival"><span>♾️</span>SURVIVAL</button>
+      <button data-tab="career"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>CAREER</button>
+      <button data-tab="upgrades"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 13l6-6 6 6"/><path d="M6 19l6-6 6 6"/></svg>UPGRADES</button>
+      <button data-tab="guns"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>GUNS</button>
+      <button data-tab="premium" class="pnav"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M9.5 4L8 9l4 11 4-11-1.5-5"/></svg>PREMIUM</button>
+      <button data-tab="survival"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2-2.6-3.6-4-5.5-4a4 4 0 000 8c1.9 0 3.5-1.4 5.5-4s3.6-4 5.5-4a4 4 0 010 8c-1.9 0-3.5-1.4-5.5-4z"/></svg>SURVIVAL</button>
     </nav>
     <button id="playBtn" class="playbig">PLAY <b>▶</b></button>
   </div>
@@ -115,6 +117,7 @@
 <script src="js/basetray.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/hudskin.js"></script>
+<script src="js/meta.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

@@ -24,7 +24,10 @@ const UPG = [
   { id: 'rate', ic: '⚡', name: 'Fast Hands', desc: '+5% fire rate', max: 5, cost: [120, 240, 400, 600, 880] },
   { id: 'bounty', ic: '🪙', name: 'Bounty Hunter', desc: '+8% coins per kill', max: 5, cost: [90, 180, 320, 500, 720] },
 ];
-const CAR = Object.assign({ stars: Array(16).fill(0), cr: 0, up: {}, sel: 0 }, store.get('career', {}));
+const CAR = Object.assign({ stars: Array(16).fill(0), cr: 0, up: {}, sel: 0, own: [] }, store.get('career', {}));
+if (!Array.isArray(CAR.own)) CAR.own = [];
+// premium guns are usable in battle only after they are bought in the Armory
+const owned = id => !WMAP[id].prem || CAR.own.includes(id);
 if (CAR.stars.length < 16) CAR.stars = CAR.stars.concat(Array(16 - CAR.stars.length).fill(0));
 const saveCar = () => store.set('career', CAR);
 const perk = id => CAR.up[id] || 0;

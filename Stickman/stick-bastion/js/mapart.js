@@ -2,29 +2,36 @@
 // Career map painter: floating-island chapters drawn once onto #mapCv (redrawn on resize)
 let mapImgsReady=false;
 function drawMap(){
-  const c=$('mapCv'),box=c.parentElement.getBoundingClientRect();if(!box.width)return;
+  const c=$('mapCv'),pe=c.parentElement,box={width:pe.clientWidth,height:pe.clientHeight};if(!box.width||!box.height)return;
   const dpr=Math.min(window.devicePixelRatio||1,2),Wm=box.width,Hm=box.height;
   c.width=Math.round(Wm*dpr);c.height=Math.round(Hm*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
-  const u=Math.min(Wm/900,Hm/560),R=mulberry(11);
+  const u=Math.min(Wm/(900*MAPW),Hm/560),R=mulberry(11);
   // sky
   let gr=g.createLinearGradient(0,0,0,Hm);gr.addColorStop(0,'#2a3f86');gr.addColorStop(.5,'#1d2a66');gr.addColorStop(1,'#131b45');g.fillStyle=gr;g.fillRect(0,0,Wm,Hm);
-  for(let i=0;i<90;i++){g.fillStyle=`rgba(255,255,255,${.15+R()*.55})`;const s=R()<.15?2.2:1.2;g.fillRect(R()*Wm,R()*Hm*.7,s,s)}
-  ISLES.forEach((s,i)=>{const t=THEME[CHAPTERS[i].id],x=s.c[0]*Wm,y=s.c[1]*Hm,rg=g.createRadialGradient(x,y,0,x,y,Wm*.32);rg.addColorStop(0,`rgba(${t.glow},.35)`);rg.addColorStop(1,`rgba(${t.glow},0)`);g.fillStyle=rg;g.fillRect(0,0,Wm,Hm)});
+  for(let i=0;i<90*MAPW;i++){g.fillStyle=`rgba(255,255,255,${.15+R()*.55})`;const s=R()<.15?2.2:1.2;g.fillRect(R()*Wm,R()*Hm*.7,s,s)}
+  ISLES.forEach((s,i)=>{const t=THEME[CHAPTERS[i].id],x=s.c[0]*Wm,y=s.c[1]*Hm,rg=g.createRadialGradient(x,y,0,x,y,Wm*.32/MAPW);rg.addColorStop(0,`rgba(${t.glow},.35)`);rg.addColorStop(1,`rgba(${t.glow},0)`);g.fillStyle=rg;g.fillRect(0,0,Wm,Hm)});
   cloudBank(g,Wm,Hm*.2,Wm,u*.8,mulberry(3),'rgba(170,190,255,.10)');
-  // back row, mid clouds, front row, bottom clouds
-  [0,1].forEach(i=>paintIsle(g,i,Wm,Hm,u));
-  cloudBank(g,Wm,Hm*.62,Wm,u,mulberry(5),'rgba(190,205,255,.05)');
-  [3,2].forEach(i=>paintIsle(g,i,Wm,Hm,u));
+  // islands left to right, then low clouds along the bottom
+  [0,1,2,3].forEach(i=>{if(chapterSeen(i))paintIsle(g,i,Wm,Hm,u)});
   cloudBank(g,Wm,Hm*1.02,Wm,u*1.3,mulberry(7),'rgba(200,215,255,.14)');
   // trail
   const P=NODEPOS.map(([a,b])=>[a*Wm,b*Hm]),done=CAR.stars.filter(x=>x>0).length;g.lineCap='round';
-  for(let i=0;i<P.length-1;i++){const [x1,y1]=P[i],[x2,y2]=P[i+1],mx=(x1+x2)/2,my=(y1+y2)/2+(i%4===3?0:12*u);
+  for(let i=0;i<P.length-1;i++){if(!chapterSeen(Math.floor((i+1)/4)))break;const [x1,y1]=P[i],[x2,y2]=P[i+1],mx=(x1+x2)/2,my=(y1+y2)/2+(i%4===3?0:12*u);
     g.setLineDash([10*u,8*u]);g.lineWidth=6.5*u;g.strokeStyle='rgba(10,10,30,.45)';g.beginPath();g.moveTo(x1,y1+3);g.quadraticCurveTo(mx,my+3,x2,y2+3);g.stroke();
     g.lineWidth=3.6*u;g.strokeStyle=i<done?'#ffd35a':'rgba(255,255,255,.92)';g.beginPath();g.moveTo(x1,y1);g.quadraticCurveTo(mx,my,x2,y2);g.stroke()}
   g.setLineDash([]);
+  // chapters further ahead than the next one are not drawn at all: just a wall of smoke
+  ISLES.forEach((s,i)=>{if(!chapterSeen(i))smoke(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,Hm,u,mulberry(200+i))});
   if(!mapImgsReady&&MAPIDS.some(id=>!MAPS[id].img.complete)){Promise.all(MAPIDS.map(id=>MAPS[id].img.decode().catch(()=>0))).then(()=>{mapImgsReady=true;if(hubTab==='career')drawMap()})}
 }
-function cloudBank(g,cx,y,Wm,u,R,col){g.fillStyle=col;for(let i=0;i<10;i++){const x=R()*Wm,r=(30+R()*60)*u;g.beginPath();g.ellipse(x,y+(R()-.5)*40*u,r*1.8,r*.7,0,0,7);g.fill()}}
+function smoke(g,x,y,rw,Hm,u,R){
+  const puff=(px,py,r,a)=>{const gr=g.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,`rgba(118,128,160,${a})`);gr.addColorStop(.6,`rgba(92,102,138,${a*.75})`);gr.addColorStop(1,'rgba(80,90,128,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()};
+  // wide base layer, then lumpy puffs, then a few lighter tops so it reads as rolling smoke rather than a flat grey box
+  puff(x,y,rw*1.6,.95);puff(x,y-Hm*.2,rw*1.2,.9);puff(x,y+Hm*.3,rw*1.3,.9);
+  for(let k=0;k<40;k++){const a=R()*Math.PI*2,d=Math.sqrt(R());puff(x+Math.cos(a)*rw*1.2*d,y-Hm*.02+Math.sin(a)*Hm*.42*d,(45+R()*75)*u,.6+R()*.3)}
+  for(let k=0;k<10;k++){const px=x+(R()-.5)*rw*1.9,py=y-Hm*.12+(R()-.5)*Hm*.25,r=(26+R()*40)*u,gr=g.createRadialGradient(px,py-r*.3,0,px,py,r);gr.addColorStop(0,'rgba(170,180,210,.35)');gr.addColorStop(1,'rgba(150,160,195,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()}
+}
+function cloudBank(g,cx,y,Wm,u,R,col){g.fillStyle=col;for(let i=0;i<10*MAPW;i++){const x=R()*Wm,r=(30+R()*60)*u;g.beginPath();g.ellipse(x,y+(R()-.5)*40*u,r*1.8,r*.7,0,0,7);g.fill()}}
 function shadeHex(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,gg=(n>>8)&255,b=n&255;const m=v=>Math.max(0,Math.min(255,Math.round(f>1?v+(255-v)*(f-1):v*f)));return`rgb(${m(r)},${m(gg)},${m(b)})`}
 function topPath(g,x,y,rw,rh,R){const n=18,pts=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2,k=.9+R()*.14;pts.push([x+Math.cos(a)*rw*k,y+Math.sin(a)*rh*k])}
   g.beginPath();pts.forEach((p,i)=>{const q=pts[(i+1)%n],mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;i?g.quadraticCurveTo(p[0],p[1],mx,my):g.moveTo(mx,my)});const p=pts[0],q=pts[1];g.quadraticCurveTo(p[0],p[1],(p[0]+q[0])/2,(p[1]+q[1])/2);g.closePath()}
