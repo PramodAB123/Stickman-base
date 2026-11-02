@@ -32,24 +32,30 @@ if (CAR.stars.length < 16) CAR.stars = CAR.stars.concat(Array(16 - CAR.stars.len
 const saveCar = () => store.set('career', CAR);
 const perk = id => CAR.up[id] || 0;
 // TESTING: true opens every level. Set to false for the real release.
-const UNLOCK_ALL = true;
-const unlocked = i => UNLOCK_ALL || i === 0 || CAR.stars[i - 1] > 0;
+const UNLOCK_ALL = false;
+// a chapter opens once the previous chapter has CH_NEED stars (out of 12)
+const CH_NEED = 10;
+const chStars = c => CAR.stars.slice(c * 4, c * 4 + 4).reduce((a, b) => a + b, 0);
+const chapterUnlocked = c => UNLOCK_ALL || c === 0 || (chapterUnlocked(c - 1) && chStars(c - 1) >= CH_NEED);
+// inside a chapter, each level needs a star on the one before it
+function unlocked(i) { if (UNLOCK_ALL || i === 0) return true; if (!chapterUnlocked(Math.floor(i / 4))) return false; return i % 4 === 0 || (unlocked(i - 1) && CAR.stars[i - 1] > 0) }
+const OBJ = ['Complete the level', 'Keep base HP above 50%', 'No gunner knocked out'];
 const starTotal = () => CAR.stars.reduce((a, b) => a + b, 0);
-function nextLevel() { const i = CAR.stars.findIndex(s => s === 0); return i < 0 ? 15 : i }
+function nextLevel() { let last = 0; for (let i = 0; i < 16; i++) { if (!unlocked(i)) break; last = i; if (!CAR.stars[i]) return i } return last }
 
 // hooks used by the game
 const careerOn = () => S && S.career;
 function careerWave() { return S.wave - S.career.off }
 function careerBossWave() { return careerOn() && S.career.boss && careerWave() === S.career.waves }
 function careerWin() {
-  const L = S.career, i = L.k - 1, hpOk = S.wallHP / S.wallMax >= .5, fewOk = S.maxGunners <= 3;
+  const L = S.career, i = L.k - 1, hpOk = S.wallHP / S.wallMax >= .5, fewOk = !S.kos;
   const got = 1 + (hpOk ? 1 : 0) + (fewOk ? 1 : 0), old = CAR.stars[i], first = old === 0;
   const earn = Math.round(L.reward * (first ? 1 : .35)) + Math.max(0, got - old) * 25;
-  CAR.stars[i] = Math.max(old, got); CAR.cr += earn; if (first && i < 15) CAR.sel = i + 1; saveCar();
+  CAR.stars[i] = Math.max(old, got); CAR.cr += earn; if (first && i < 15 && unlocked(i + 1)) CAR.sel = i + 1; saveCar();
   S.mode = 'won'; hudHide(); SND.play('clear');
   const st = $('winStars'); st.innerHTML = [0, 1, 2].map(j => `<i class="${j < got ? 'on' : ''}" style="animation-delay:${.25 + j * .3}s">★</i>`).join('');
   $('winLvl').textContent = 'CHAPTER ' + (L.ch + 1) + ' · LEVEL ' + L.k;
-  $('winObj').innerHTML = [['Complete the level', true], ['Keep base HP above 50%', hpOk], ['Use 3 or fewer gunners', fewOk]].map(([t, ok]) => `<div class="${ok ? 'ok' : ''}">${ok ? '★' : '☆'} ${t}</div>`).join('');
-  $('winCr').textContent = '+' + earn; $('nextBtn').classList.toggle('hidden', i >= 15);
+  $('winObj').innerHTML = [[OBJ[0], true], [OBJ[1], hpOk], [OBJ[2], fewOk]].map(([t, ok]) => `<div class="${ok ? 'ok' : ''}">${ok ? '★' : '☆'} ${t}</div>`).join('');
+  $('winCr').textContent = '+' + earn; $('nextBtn').classList.toggle('hidden', i >= 15 || !unlocked(i + 1));
   setTimeout(() => showScreen('win'), 900);
 }

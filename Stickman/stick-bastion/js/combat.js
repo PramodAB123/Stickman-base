@@ -3,7 +3,7 @@
 function hurtGunner(s,dmg){
   if(!s||!s.w||s.down||s.ko||dmg<=0||S.mode!=='play')return;
   s.hp-=dmg;s.hurt=.25;
-  if(s.hp<=0){s.hp=0;s.ko=true;s.tgt=null;s.boost=0;floater(s.x,s.y-s.crate-90,'KNOCKED OUT!','#ff6b5b',.9);SND.play('thud');explodeFx(s.x,s.y-s.crate-40,30)}
+  if(s.hp<=0){s.hp=0;s.ko=true;S.kos=(S.kos||0)+1;s.tgt=null;s.boost=0;floater(s.x,s.y-s.crate-90,'KNOCKED OUT!','#ff6b5b',.9);SND.play('thud');explodeFx(s.x,s.y-s.crate-40,30)}
 }
 function nearGunner(x,y,r){let best=null,bd=r;for(const s of S.slots){if(!s.w||s.ko)continue;const d=Math.hypot(s.x-x,(s.y-s.crate-40)-y);if(d<bd){bd=d;best=s}}return best}
 function hitWall(dmg,x,y){

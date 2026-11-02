@@ -7,9 +7,9 @@ const MAPW=2.2; // strip width as a multiple of the visible map area
 const ISLES=[0,1,2,3].map(i=>{const cx=.125+.25*i,cy=i%2?.46:.4,rw=.1;
   return{c:[cx,cy],r:[rw,.145],nodes:[-.7,-.24,.24,.7].map((f,k)=>[cx+f*rw,cy+[.08,.11,.11,.06][k]]),lm:[cx+.004,cy-.1],lab:[cx-rw*.98,.04]}});
 // a chapter is hidden in smoke until the player reaches it (a star on the previous chapter's boss level, or on any of its own levels)
-const chapterOpen=c=>c===0||CAR.stars[c*4-1]>0||CAR.stars.slice(c*4,c*4+4).some(x=>x>0);
+const chapterOpen=c=>chapterUnlocked(c);
 // you can always see the chapters you've reached plus the next one; everything past that is hidden in smoke
-const chapterSeen=c=>c===0||chapterOpen(c)||chapterOpen(c-1);
+const chapterSeen=c=>chapterOpen(c);
 const seenCount=()=>[0,1,2,3].filter(chapterSeen).length;
 const NODEPOS=ISLES.flatMap(s=>s.nodes);
 const THEME={
@@ -39,13 +39,13 @@ $('backBtn').onclick=()=>{SND.play('click');showTab('career')};
 
 function renderNodes(){
   const cur=nextLevel();
-  $('nodes').innerHTML=ISLES.map((s,i)=>chapterSeen(i)?`<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span>${CHAPTERS[i].icon}</span><div><small>CHAPTER ${i+1}</small>${CHAPTERS[i].name}</div></div>`:'').join('')+
+  $('nodes').innerHTML=ISLES.map((s,i)=>chapterSeen(i)?`<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span>${CHAPTERS[i].icon}</span><div><small>CHAPTER ${i+1}</small>${CHAPTERS[i].name}</div></div>`:i===seenCount()?`<div class="chlab fogged" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:#8a93b8"><span>🔒</span><div><small>CHAPTER ${i+1}</small>Need ${CH_NEED}★ in Chapter ${i} (${chStars(i-1)}/12)</div></div>`:'').join('')+
   LEVELS.map((L,i)=>{if(!chapterSeen(L.ch))return'';const [x,y]=NODEPOS[i],st=CAR.stars[i],lk=!unlocked(i);
     return `<button class="node${st?' done':''}${i===cur&&!st?' cur':''}${lk?' lock':''}${L.boss?' boss':''}${i===CAR.sel?' sel':''}" data-i="${i}" style="left:${x*100}%;top:${y*100}%" aria-label="Level ${L.k}">
       <span class="hex"><span class="num">${lk?'🔒':L.boss?'☠':L.k}</span></span><span class="ns">${[0,1,2].map(j=>`<i class="${j<st?'on':''}">★</i>`).join('')}</span></button>`}).join('');
 }
 // scroll the strip so a level sits in the middle of the view
-function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=4?1e9:Math.max(0,(.25*n+.04)*$('mapIn').clientWidth-w.clientWidth)}
+function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=3?1e9:Math.max(0,(.25*(n+1)+.04)*$('mapIn').clientWidth-w.clientWidth)}
 $('mapWrap').addEventListener('scroll',()=>{const w=$('mapWrap'),m=mapMaxScroll();if(w.scrollLeft>m)w.scrollLeft=m});
 function centerMap(i,smooth){const w=$('mapWrap'),x=NODEPOS[i][0]*$('mapIn').clientWidth-w.clientWidth/2;w.scrollTo({left:Math.min(mapMaxScroll(),Math.max(0,x)),behavior:smooth?'smooth':'auto'})}
 // drag / wheel scrolling (touch scrolls natively); a drag never counts as a tap on a level
@@ -69,8 +69,8 @@ function renderPanel(){
     <div class="pens">${ens.map(id=>`<div class="${ET[id].boss?'bs':''}" title="${ET[id].name}"><img alt="${ET[id].name}" src="assets/enemies/${id}.webp"></div>`).join('')}</div>
     <div class="psec">REWARDS</div>
     <div class="prw"><div><span class="crc">C</span>×${st?Math.round(L.reward*.35):L.reward}</div><div><span class="sti">★</span>+25 each</div></div>
-    <div class="pobj">${['Complete the level','Keep base HP above 50%','Use 3 or fewer gunners'].map((o,j)=>`<div class="${j<st?'on':''}"><i>★</i>${o}</div>`).join('')}</div>
-    ${lk?'<div class="plock">🔒 Clear level '+i+' to unlock</div>':''}`;
+    <div class="pobj">${OBJ.map((o,j)=>`<div class="${j<st?'on':''}"><i>★</i>${o}</div>`).join('')}</div>
+    ${lk?'<div class="plock">🔒 '+(i%4===0&&!chapterUnlocked(L.ch)?'Need '+CH_NEED+'★ in Chapter '+L.ch+' ('+chStars(L.ch-1)+'/12)':'Clear level '+i+' to unlock')+'</div>':''}`;
   $('playBtn').disabled=lk&&hubTab==='career';
 }
 // ---------- upgrades ----------
