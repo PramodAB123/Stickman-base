@@ -70,13 +70,13 @@ function paintIsle(g,i,Wm,Hm,u){
   const items=[];
   const add=(fx,fy,fn)=>items.push({px:x+fx*rw,py:y+fy*rh,fn});
   const im=MAPS[id].img;
-  items.push({base:1,px:s.lm[0]*Wm,py:s.lm[1]*Hm+Hm*.06,fn:(px,py)=>{if(im.complete&&im.naturalWidth){const h=Hm*.21,w=h*im.naturalWidth/im.naturalHeight;g.drawImage(im,px-w/2,py-h,w,h)}}});
+  items.push({base:1,px:s.lm[0]*Wm,py:s.lm[1]*Hm+Hm*.06,fn:(px,py)=>{if(im.complete&&im.naturalWidth){const h=Hm*.27,w=h*im.naturalWidth/im.naturalHeight;g.drawImage(im,px-w/2,py-h,w,h)}}});
   for(let k=0;k<8;k++)add((R()-.5)*1.8,(R()-.3)*1.3,(px,py)=>rock(g,px,py,u*(.6+R()*.6),P));
   if(id==='desert'){[[-.75,-.45,1.2],[.72,-.5,1],[-.35,-.7,.8],[.5,.2,.6],[.82,.15,.7]].forEach(([a,b,k])=>add(a,b,(px,py)=>mesa(g,px,py,k*u,R)));for(let k=0;k<7;k++)add((R()-.5)*1.7,(R()-.3)*1.2,(px,py)=>cactus(g,px,py,u*(.8+R()*.5)))}
   if(id==='industrial'){[[-.7,-.55,1.3],[-.4,-.75,1],[.75,-.5,1.1],[.45,-.8,.8]].forEach(([a,b,k])=>add(a,b,(px,py)=>peak(g,px,py,k*u)));for(let k=0;k<5;k++)add((R()-.5)*1.7,(R()-.2)*1.1,(px,py)=>crystal(g,px,py,u*(.8+R()*.6),R));for(let k=0;k<6;k++)add((R()-.5)*1.8,(R()-.4)*1.2,(px,py)=>pine(g,px,py,u*(.8+R()*.4)))}
   if(id==='nature'){for(let k=0;k<12;k++)add((R()-.5)*1.85,(R()-.55)*1.4,(px,py)=>tree(g,px,py,u*(.9+R()*.7),R));for(let k=0;k<3;k++)add((R()-.5)*1.4,(R()-.2)*.9,(px,py)=>ruin(g,px,py,u))}
   if(id==='cyber'){add(-.62,-.35,(px,py)=>volcano(g,px,py,u*1.3));add(.72,-.4,(px,py)=>volcano(g,px,py,u*.9));for(let k=0;k<6;k++)add((R()-.5)*1.7,(R()-.3)*1.2,(px,py)=>basalt(g,px,py,u*(.8+R()*.5),R))}
-  const bx=s.lm[0]*Wm,by=s.lm[1]*Hm+Hm*.06;items.sort((a,b)=>a.py-b.py).forEach(it=>{if(!it.base&&Math.abs(it.px-bx)<rw*.42&&Math.abs(it.py-by)<rh*.55)return;it.fn(it.px,it.py)});
+  const bx=s.lm[0]*Wm,by=s.lm[1]*Hm+Hm*.06;items.sort((a,b)=>a.py-b.py).forEach(it=>{if(!it.base&&Math.abs(it.px-bx)<rw*.52&&Math.abs(it.py-by)<rh*.62)return;it.fn(it.px,it.py)});
 }
 function fall(g,x,y,w,h,c,u){const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,`rgba(${c},.95)`);gr.addColorStop(.7,`rgba(${c},.5)`);gr.addColorStop(1,`rgba(${c},0)`);g.fillStyle=gr;g.fillRect(x-w/2,y,w,h);
   g.fillStyle='rgba(255,255,255,.55)';g.fillRect(x-w*.15,y,w*.25,h*.7);g.fillStyle=`rgba(${c},.25)`;for(let k=0;k<5;k++){g.beginPath();g.arc(x+(k-2)*w*.6,y+h*.75,w*1.2,0,7);g.fill()}}
