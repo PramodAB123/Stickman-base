@@ -113,7 +113,7 @@ function drawSlotUI(g,s){
   }else{
     const tx=s.x,ty=fy+12;
     g.fillStyle='rgba(15,8,28,.85)';rr(g,tx-17,ty-8,34,16,5);g.fill();g.fillStyle=WMAP[s.w].col;g.font='900 10px system-ui,Arial';g.fillText('LV '+(s.lvl+1),tx,ty+.5);
-    if(s.lvl<MAXLV&&S.coins>=upCost(WMAP[s.w],s.lvl)){const ay=fy-98+Math.sin(t*5+s.x)*4;g.fillStyle='#5be27f';g.strokeStyle='#0d3a1a';g.lineWidth=2;g.beginPath();g.moveTo(s.x,ay-10);g.lineTo(s.x+10,ay+1);g.lineTo(s.x+4,ay+1);g.lineTo(s.x+4,ay+10);g.lineTo(s.x-4,ay+10);g.lineTo(s.x-4,ay+1);g.lineTo(s.x-10,ay+1);g.closePath();g.fill();g.stroke()}
+    if(s.lvl<MAXLV&&S.coins>=upCost(WMAP[s.w],s.lvl))drawUpBadge(g,s.x,fy-108+Math.sin(t*3+s.x)*3,t+s.x*.01);
     if(sel){g.strokeStyle='rgba(255,215,90,.9)';g.lineWidth=2;g.beginPath();g.ellipse(s.x,fy+1,24,6,0,0,7);g.stroke()}
   }
 }
@@ -198,6 +198,28 @@ function drawPlane(g){
   g.restore();
 }
 let dangerVg=null;
+// "upgrade ready" badge over a gunner: a gold rank shield whose chevrons light up bottom-to-top,
+// with a soft glow, a shine sweep and two drifting sparkles
+function drawUpBadge(g,x,y,t){
+  const pulse=.5+.5*Math.sin(t*4);
+  const gl=g.createRadialGradient(x,y,2,x,y,26);gl.addColorStop(0,`rgba(255,210,70,${.35+.25*pulse})`);gl.addColorStop(1,'rgba(255,210,70,0)');g.fillStyle=gl;g.beginPath();g.arc(x,y,26,0,7);g.fill();
+  const shield=()=>{g.beginPath();g.moveTo(x-12,y-13);g.lineTo(x+12,y-13);g.lineTo(x+12,y+2);g.quadraticCurveTo(x+11,y+9,x,y+15);g.quadraticCurveTo(x-11,y+9,x-12,y+2);g.closePath()};
+  g.save();g.lineJoin='round';
+  shield();g.lineWidth=5;g.strokeStyle='#1a0f04';g.stroke();
+  const bg=g.createLinearGradient(x,y-13,x,y+15);bg.addColorStop(0,'#2b4482');bg.addColorStop(1,'#0e1736');g.fillStyle=bg;g.fill();
+  const rim=g.createLinearGradient(x-12,y-13,x+12,y+15);rim.addColorStop(0,'#fff1a8');rim.addColorStop(.5,'#ffc52e');rim.addColorStop(1,'#c27a12');g.lineWidth=2.4;g.strokeStyle=rim;g.stroke();
+  // chevrons fill up one by one, then all flash together
+  const lit=Math.floor(t*3)%5;g.lineWidth=3;g.lineCap='round';
+  for(let k=0;k<3;k++){const cy=y+7-k*6.5,on=k<lit;g.strokeStyle=on?'#ffd84a':'rgba(255,216,74,.22)';if(on){g.shadowColor='rgba(255,200,40,.9)';g.shadowBlur=6}
+    g.beginPath();g.moveTo(x-7,cy+2.5);g.lineTo(x,cy-2.5);g.lineTo(x+7,cy+2.5);g.stroke();g.shadowBlur=0}
+  // shine sweep
+  shield();g.clip();const sx=x-30+((t*.9)%1.6)*60;const sh=g.createLinearGradient(sx-8,y,sx+8,y);sh.addColorStop(0,'rgba(255,255,255,0)');sh.addColorStop(.5,'rgba(255,255,255,.45)');sh.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=sh;g.translate(sx,y);g.rotate(.5);g.fillRect(-8,-30,16,60);g.restore();
+  // sparkles
+  for(let k=0;k<2;k++){const ph=(t*.8+k*.5)%1,px=x+(k?15:-15)+Math.sin(ph*6)*2,py=y+6-ph*26,r=2.6*(1-ph)+.6;g.globalAlpha=1-ph;g.fillStyle='#fff6c8';
+    g.beginPath();g.moveTo(px,py-r*2);g.lineTo(px+r*.6,py-r*.6);g.lineTo(px+r*2,py);g.lineTo(px+r*.6,py+r*.6);g.lineTo(px,py+r*2);g.lineTo(px-r*.6,py+r*.6);g.lineTo(px-r*2,py);g.lineTo(px-r*.6,py-r*.6);g.closePath();g.fill()}
+  g.globalAlpha=1;
+}
 function drawWorld(){
   const g=ctx;
   if(!bg||!bg.width||!bg.height)bg=buildBG();
