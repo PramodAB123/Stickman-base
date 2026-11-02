@@ -50,7 +50,7 @@ function spawnEnemy(type, demo) {
   if (d.stopR) e.stopX = WALL.x1 + rand(d.stopR[0], d.stopR[1]);
   if (d.fly) { e.baseY = rand(d.alt[0], d.alt[1]); e.y = e.baseY; if (d.beh === 'bomb') e.stopX = WALL.x1 + rand(90, 230); if (d.beh === 'shoot') e.stopX = WALL.x1 + rand(170, 320) }
   if (d.boss && d.fly) e.stopX = WALL.x1 + rand(180, 260);
-  computeBody(e); S.enemies.push(e); return e;
+  computeBody(e); S.enemies.push(e); if (d.boss && !demo) { SND.play('boss'); S.shake = Math.max(S.shake, 10) } return e;
 }
 // hitboxes, weak spot and gun position from the sprite's size
 function computeBody(e) {

@@ -185,4 +185,4 @@ window.addEventListener('keydown',e=>{
   else if(e.key==='f'||e.key==='F')callStrike();
   else if(e.key>='1'&&e.key<='4')openSlot(+e.key-1);
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(SND.ctx&&SND.ctx.state==='running')SND.ctx.suspend()}else if(SND.ctx&&SND.ctx.state==='suspended')SND.ctx.resume()});

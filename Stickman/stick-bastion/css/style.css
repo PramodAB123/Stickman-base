@@ -383,3 +383,15 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 @keyframes panelIn{from{opacity:0;transform:translateY(1.2em) scale(.9)}to{opacity:1;transform:none}}
 @keyframes tabIn{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.screen.dim,.screen.dim .panel,.tabbox,.side,.mapwrap{animation:none}}
+
+/* ---------- final polish ---------- */
+.stars3 i:not(.on){font-size:.85em;align-self:center;opacity:.8}
+#hpFill.bad{animation:hpPulse .55s ease-in-out infinite alternate}
+@keyframes hpPulse{to{filter:brightness(1.6);box-shadow:0 0 .6em rgba(255,60,50,.9)}}
+@media (prefers-reduced-motion:reduce){#hpFill.bad{animation:none}}
+/* level panel: never squash the objectives on short phones, compact it instead (scrolls if still too tall) */
+.side>*{flex-shrink:0}
+.side{scrollbar-width:none}.side::-webkit-scrollbar{display:none}
+@media (max-height:420px){.side{gap:.26em;padding:.45em .6em}.side .prev{height:4.1em}.side .pobj{padding:.25em .45em}}
+/* narrow screens: drop the hazard stripes beside the wave title so they never touch the HP / coin boxes */
+@media (max-width:760px){#waveBox::before,#waveBox::after{display:none}}

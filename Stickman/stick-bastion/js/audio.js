@@ -43,6 +43,8 @@ const SND={ctx:null,on:store.get('snd',true),noise:null,last:{},master:null,
       case'nope':this.tone(180,.15,'square',.08,120);break;
       case'over':this.tone(320,1.3,'sawtooth',.14,55);break;
       case'click':this.tone(700,.04,'square',.05);break;
+      case'boss':this.tone(73,1.6,'sawtooth',.16,55);this.tone(110,1.6,'sawtooth',.1,82);this.nz(1.2,300,.5,.35);break;
+      case'alarm':this.tone(880,.14,'square',.06,660);this.tone(880,.14,'square',.06,660,.22);break;
       case'plane':this.nz(1.6,500,.4,.25,'bandpass');break;
     }}catch(e){}
   }

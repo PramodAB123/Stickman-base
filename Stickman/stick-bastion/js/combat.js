@@ -11,6 +11,8 @@ function hitWall(dmg,x,y){
   S.parts.push({type:'smoke',x,y,vx:rand(10,40),vy:-20,life:.6,max:.6,size:rand(10,16),g:0});
   if(dmg<=0||S.mode!=='play')return;
   S.wallHP-=dmg;S.wallHit=.25;S.shake=Math.max(S.shake,3);SND.play('thud');
+  if(S.wallHP>0&&S.wallHP<S.wallMax*.3&&!S.lowWarn){S.lowWarn=1;SND.play('alarm');floater(W/2,190,'BASE CRITICAL! REPAIR!','#ff5a4f',1.3)}
+  if(S.wallHP>=S.wallMax*.45)S.lowWarn=0;
   if(S.wallHP<=0){S.wallHP=0;startDying()}
 }
 
