@@ -5,7 +5,7 @@ let hubTab=store.get('tab','career');if(!TABS.includes(hubTab))hubTab='career';
 // island layout on the chapter map: one long strip, chapters left to right (fractions of the strip's width / height)
 const MAPW=2.2; // strip width as a multiple of the visible map area
 const ISLES=[0,1,2,3].map(i=>{const cx=.125+.25*i,cy=i%2?.46:.4,rw=.1;
-  return{c:[cx,cy],r:[rw,.145],nodes:[-.7,-.24,.24,.7].map((f,k)=>[cx+f*rw,cy+[.08,.11,.11,.06][k]]),lm:[cx+.004,cy-.1],lab:[cx-rw*.98,.04]}});
+  return{c:[cx,cy],r:[rw,.145],nodes:[-.7,-.24,.24,.7].map((f,k)=>[cx+f*rw,cy+[.08,.11,.11,.06][k]]),lm:[cx+.004,cy-.1],lab:[cx,.035]}});
 // a chapter is hidden in smoke until the player reaches it (a star on the previous chapter's boss level, or on any of its own levels)
 const chapterOpen=c=>chapterUnlocked(c);
 // you can always see the chapters you've reached plus the next one; everything past that is hidden in smoke
@@ -37,15 +37,34 @@ function hubChips(){$('crTxt').textContent=CAR.cr;$('stTxt').textContent=starTot
 document.querySelector('.bnav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;SND.unlock();SND.play('click');showTab(b.dataset.tab)});
 $('backBtn').onclick=()=>{SND.play('click');showTab('career')};
 
+// flat chapter emblems (no emoji): cactus, snowflake, leaf, flame
+const CH_SVG={
+  desert:'<path d="M12 21V5.5a2 2 0 014 0V21M12 13H9a2 2 0 01-2-2V8.5M16 15h2a2 2 0 002-2v-2.5M9 21h10"/>',
+  industrial:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/>',
+  nature:'<path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/>',
+  cyber:'<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.5 3-5.5 3.5-9 2 1.5 3 3.5 3 5.5 1-1 1.6-2.2 1.8-3.5 2.3 2 3.7 4.3 3.7 7 0 3.4-2.5 6-5.5 6z"/>'};
+const MICO={
+  lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="1.6"/><path class="o" d="M8.2 10.5V8a3.8 3.8 0 017.6 0v2.5"/></svg>',
+  boss:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-4.9 0-8.5 3.4-8.5 8 0 2.6 1.2 4.6 3 5.8V20a1 1 0 001 1h9a1 1 0 001-1v-3.7c1.8-1.2 3-3.2 3-5.8 0-4.6-3.6-8-8.5-8z"/><path class="k" d="M8.6 9.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM15.4 9.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM12 14.3l-1.2 2h2.4zM9.5 21v-2.6M12 21v-2.6M14.5 21v-2.6"/></svg>',
+  // the player's stickman with a banner, parked next to the next level to play
+  you:'<svg class="you" viewBox="0 0 30 40" aria-hidden="true"><path class="pole" d="M21 39V3"/><path class="flag" d="M21 3h8l-2.6 3.6L29 10h-8z"/><circle cx="9" cy="10" r="3.6"/><path d="M9 13.6v12M9 26l-4.5 12M9 26l4.5 12M9 17.5l-5.5 5M9 17.5l12-3"/></svg>'};
+const chIcon=id=>`<svg class="ce" viewBox="0 0 24 24" aria-hidden="true">${CH_SVG[id]}</svg>`;
+const STAR='<svg viewBox="0 0 24 24"><path d="M12 2.2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.2l-6 3.3 1.3-6.7-5-4.6 6.8-.8z"/></svg>';
 function renderNodes(){
   const cur=nextLevel();
-  $('nodes').innerHTML=ISLES.map((s,i)=>chapterSeen(i)?`<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span>${CHAPTERS[i].icon}</span><div><small>CHAPTER ${i+1}</small>${CHAPTERS[i].name}</div></div>`:i===seenCount()?`<div class="chlab fogged" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:#8a93b8"><span>🔒</span><div><small>CHAPTER ${i+1}</small>Need ${CH_NEED}★ in Chapter ${i} (${chStars(i-1)}/12)</div></div>`:'').join('')+
-  LEVELS.map((L,i)=>{if(!chapterSeen(L.ch))return'';const [x,y]=NODEPOS[i],st=CAR.stars[i],lk=!unlocked(i);
-    return `<button class="node${st?' done':''}${i===cur&&!st?' cur':''}${lk?' lock':''}${L.boss?' boss':''}${i===CAR.sel?' sel':''}" data-i="${i}" style="left:${x*100}%;top:${y*100}%" aria-label="Level ${L.k}">
-      <span class="hex"><span class="num">${lk?'🔒':L.boss?'☠':L.k}</span></span><span class="ns">${[0,1,2].map(j=>`<i class="${j<st?'on':''}">★</i>`).join('')}</span></button>`}).join('');
+  $('nodes').innerHTML=ISLES.map((s,i)=>{
+    if(chapterSeen(i)){const got=chStars(i);
+      return `<div class="chlab" style="left:${s.lab[0]*100}%;top:${s.lab[1]*100}%;--c:${CHAPTERS[i].col}"><span class="cem">${chIcon(CHAPTERS[i].id)}</span><div class="rb"><small>CHAPTER ${i+1}</small><b>${CHAPTERS[i].name}</b></div><span class="cst">${STAR}${got}<i>/12</i></span></div>`}
+    if(i!==seenCount())return'';const have=chStars(i-1);
+    // big seal in the middle of the fog
+    return `<div class="fogseal" style="left:${s.c[0]*100}%;top:${s.c[1]*100}%"><span class="lk">${MICO.lock}</span><small>CHAPTER ${i+1}</small><b>${CHAPTERS[i].name}</b><span class="need">Earn ${CH_NEED}${STAR} in Chapter ${i}</span><span class="cbar"><i style="width:${Math.min(100,have/CH_NEED*100)}%"></i><em>${have} / ${CH_NEED}</em></span></div>`}).join('')+
+  LEVELS.map((L,i)=>{if(!chapterSeen(L.ch))return'';const [x,y]=NODEPOS[i],st=CAR.stars[i],lk=!unlocked(i),isCur=i===cur&&!st&&!lk;
+    return `<button class="node${st?' done':''}${isCur?' cur':''}${lk?' lock':''}${L.boss?' boss':''}${i===CAR.sel?' sel':''}" data-i="${i}" style="left:${x*100}%;top:${y*100}%" aria-label="Level ${L.k}${L.boss?' boss':''}">
+      <span class="ns">${[0,1,2].map(j=>`<i class="${j<st?'on':''}">${STAR}</i>`).join('')}</span>
+      <span class="md"><span class="num">${lk?MICO.lock:L.boss?MICO.boss:L.k}</span></span>${L.boss?'<span class="btag">BOSS</span>':''}${isCur?MICO.you:''}</button>`}).join('');
 }
 // scroll the strip so a level sits in the middle of the view
-function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=3?1e9:Math.max(0,(.25*(n+1)+.04)*$('mapIn').clientWidth-w.clientWidth)}
+function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=3?1e9:Math.max(0,(.25*(n+1)+.07)*$('mapIn').clientWidth-w.clientWidth)}
 $('mapWrap').addEventListener('scroll',()=>{const w=$('mapWrap'),m=mapMaxScroll();if(w.scrollLeft>m)w.scrollLeft=m});
 function centerMap(i,smooth){const w=$('mapWrap'),x=NODEPOS[i][0]*$('mapIn').clientWidth-w.clientWidth/2;w.scrollTo({left:Math.min(mapMaxScroll(),Math.max(0,x)),behavior:smooth?'smooth':'auto'})}
 // drag / wheel scrolling (touch scrolls natively); a drag never counts as a tap on a level

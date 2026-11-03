@@ -6,30 +6,38 @@ function drawMap(){
   const dpr=Math.min(window.devicePixelRatio||1,2),Wm=box.width,Hm=box.height;
   c.width=Math.round(Wm*dpr);c.height=Math.round(Hm*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
   const u=Math.min(Wm/(900*MAPW),Hm/560),R=mulberry(11);
-  // sky
-  let gr=g.createLinearGradient(0,0,0,Hm);gr.addColorStop(0,'#2a3f86');gr.addColorStop(.5,'#1d2a66');gr.addColorStop(1,'#131b45');g.fillStyle=gr;g.fillRect(0,0,Wm,Hm);
-  for(let i=0;i<90*MAPW;i++){g.fillStyle=`rgba(255,255,255,${.15+R()*.55})`;const s=R()<.15?2.2:1.2;g.fillRect(R()*Wm,R()*Hm*.7,s,s)}
-  ISLES.forEach((s,i)=>{const t=THEME[CHAPTERS[i].id],x=s.c[0]*Wm,y=s.c[1]*Hm,rg=g.createRadialGradient(x,y,0,x,y,Wm*.32/MAPW);rg.addColorStop(0,`rgba(${t.glow},.35)`);rg.addColorStop(1,`rgba(${t.glow},0)`);g.fillStyle=rg;g.fillRect(0,0,Wm,Hm)});
-  cloudBank(g,Wm,Hm*.2,Wm,u*.8,mulberry(3),'rgba(170,190,255,.10)');
+  // dusk sky: deep navy overhead warming to violet and a low rose band, then far mountain ranges
+  let gr=g.createLinearGradient(0,0,0,Hm);gr.addColorStop(0,'#16205a');gr.addColorStop(.45,'#2a3486');gr.addColorStop(.78,'#4a3f8e');gr.addColorStop(1,'#7a4f8c');g.fillStyle=gr;g.fillRect(0,0,Wm,Hm);
+  for(let i=0;i<110*MAPW;i++){const sx=R()*Wm,sy=R()*Hm*.6,a=.25+R()*.6;g.fillStyle=`rgba(255,250,235,${a})`;if(R()<.08){const r=2.4*u;g.beginPath();g.moveTo(sx,sy-r*2);g.lineTo(sx+r*.5,sy-r*.5);g.lineTo(sx+r*2,sy);g.lineTo(sx+r*.5,sy+r*.5);g.lineTo(sx,sy+r*2);g.lineTo(sx-r*.5,sy+r*.5);g.lineTo(sx-r*2,sy);g.lineTo(sx-r*.5,sy-r*.5);g.fill()}else g.fillRect(sx,sy,1.4,1.4)}
+  moon(g,.035*Wm,.2*Hm,30*u);moon(g,.5*Wm,.12*Hm,20*u);
+  ranges(g,Wm,Hm,u);
+  puffBand(g,Wm,Hm*.3,u*.9,mulberry(3),'#3a4592','#48539f',.55);
   // islands left to right, then low clouds along the bottom
-  [0,1,2,3].forEach(i=>{if(chapterSeen(i))paintIsle(g,i,Wm,Hm,u)});
-  cloudBank(g,Wm,Hm*1.02,Wm,u*1.3,mulberry(7),'rgba(200,215,255,.14)');
-  // trail
-  const P=NODEPOS.map(([a,b])=>[a*Wm,b*Hm]),done=CAR.stars.filter(x=>x>0).length;g.lineCap='round';
-  for(let i=0;i<P.length-1;i++){if(!chapterSeen(Math.floor((i+1)/4)))break;const [x1,y1]=P[i],[x2,y2]=P[i+1],mx=(x1+x2)/2,my=(y1+y2)/2+(i%4===3?0:12*u);
-    g.setLineDash([10*u,8*u]);g.lineWidth=6.5*u;g.strokeStyle='rgba(10,10,30,.45)';g.beginPath();g.moveTo(x1,y1+3);g.quadraticCurveTo(mx,my+3,x2,y2+3);g.stroke();
-    g.lineWidth=3.6*u;g.strokeStyle=i<done?'#ffd35a':'rgba(255,255,255,.92)';g.beginPath();g.moveTo(x1,y1);g.quadraticCurveTo(mx,my,x2,y2);g.stroke()}
-  g.setLineDash([]);
+  [0,1,2,3].forEach(i=>{if(chapterSeen(i)){shards(g,i,Wm,Hm,u);paintIsle(g,i,Wm,Hm,u)}});
+  birds(g,Wm,Hm,u,mulberry(5));
+  puffBand(g,Wm,Hm*1.0,u*1.1,mulberry(7),'#3f3d84','#514e98',1);puffBand(g,Wm,Hm*1.09,u*1.4,mulberry(8),'#4a4790','#5e5aa6',1);
+  // trail: a dirt road across each island, rope bridges between islands, a stone pad under every level marker
+  const P=NODEPOS.map(([a,b])=>[a*Wm,b*Hm]);g.lineCap='round';g.lineJoin='round';
+  for(let i=0;i<P.length-1;i++){const ch=Math.floor(i/4);if(!chapterSeen(ch))break;const [x1,y1]=P[i],[x2,y2]=P[i+1];
+    if(i%4===3){bridge(g,x1,y1,x2,y2,u,CAR.stars[i]>0&&chapterSeen(ch+1));continue}
+    const my=(y1+y2)/2+12*u,mx=(x1+x2)/2,q=t=>{const a=1-t;return[a*a*x1+2*a*t*mx+t*t*x2,a*a*y1+2*a*t*my+t*t*y2]},n=Math.max(4,Math.round(Math.hypot(x2-x1,y2-y1)/(15*u))),done=CAR.stars[i]>0;
+    for(let k=1;k<n;k++){const [sx,sy]=q(k/n),w=(6.5+(k%2)*1.2)*u;
+      g.fillStyle='rgba(20,10,20,.35)';g.beginPath();g.ellipse(sx,sy+2.4*u,w,w*.5,0,0,7);g.fill();
+      g.fillStyle=done?'#c98a12':'#7d8399';g.beginPath();g.ellipse(sx,sy+1.2*u,w,w*.5,0,0,7);g.fill();
+      g.fillStyle=done?'#ffd23a':'#c9cede';g.beginPath();g.ellipse(sx,sy,w*.92,w*.42,0,0,7);g.fill();
+      g.fillStyle=done?'#ffe68a':'#e4e7f0';g.beginPath();g.ellipse(sx-w*.25,sy-w*.1,w*.4,w*.16,0,0,7);g.fill()}}
+  P.forEach(([x,y],i)=>{if(chapterSeen(Math.floor(i/4)))pad(g,x,y,u,LEVELS[i].boss,CHAPTERS[LEVELS[i].ch].id)});
   // chapters further ahead than the next one are not drawn at all: just a wall of smoke
   ISLES.forEach((s,i)=>{if(!chapterSeen(i))smoke(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,Hm,u,mulberry(200+i))});
+  {const i=seenCount();if(i<4){const s=ISLES[i];hiddenIsle(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,s.r[1]*Hm);fogEdge(g,(s.c[0]-s.r[0]*1.25)*Wm,Hm,u,mulberry(300+i))}}
   if(!mapImgsReady&&MAPIDS.some(id=>!MAPS[id].img.complete)){Promise.all(MAPIDS.map(id=>MAPS[id].img.decode().catch(()=>0))).then(()=>{mapImgsReady=true;if(hubTab==='career')drawMap()})}
 }
 function smoke(g,x,y,rw,Hm,u,R){
-  const puff=(px,py,r,a)=>{const gr=g.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,`rgba(118,128,160,${a})`);gr.addColorStop(.6,`rgba(92,102,138,${a*.75})`);gr.addColorStop(1,'rgba(80,90,128,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()};
+  const puff=(px,py,r,a)=>{const gr=g.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,`rgba(70,75,135,${a})`);gr.addColorStop(.6,`rgba(62,66,124,${a*.75})`);gr.addColorStop(1,'rgba(55,58,115,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()};
   // wide base layer, then lumpy puffs, then a few lighter tops so it reads as rolling smoke rather than a flat grey box
   puff(x,y,rw*1.6,.95);puff(x,y-Hm*.2,rw*1.2,.9);puff(x,y+Hm*.3,rw*1.3,.9);
   for(let k=0;k<40;k++){const a=R()*Math.PI*2,d=Math.sqrt(R());puff(x+Math.cos(a)*rw*1.2*d,y-Hm*.02+Math.sin(a)*Hm*.42*d,(45+R()*75)*u,.6+R()*.3)}
-  for(let k=0;k<10;k++){const px=x+(R()-.5)*rw*1.9,py=y-Hm*.12+(R()-.5)*Hm*.25,r=(26+R()*40)*u,gr=g.createRadialGradient(px,py-r*.3,0,px,py,r);gr.addColorStop(0,'rgba(170,180,210,.35)');gr.addColorStop(1,'rgba(150,160,195,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()}
+  for(let k=0;k<10;k++){const px=x+(R()-.5)*rw*1.9,py=y-Hm*.12+(R()-.5)*Hm*.25,r=(26+R()*40)*u,gr=g.createRadialGradient(px,py-r*.3,0,px,py,r);gr.addColorStop(0,'rgba(110,115,180,.4)');gr.addColorStop(1,'rgba(100,105,170,0)');g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill()}
 }
 function cloudBank(g,cx,y,Wm,u,R,col){g.fillStyle=col;for(let i=0;i<10*MAPW;i++){const x=R()*Wm,r=(30+R()*60)*u;g.beginPath();g.ellipse(x,y+(R()-.5)*40*u,r*1.8,r*.7,0,0,7);g.fill()}}
 function shadeHex(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,gg=(n>>8)&255,b=n&255;const m=v=>Math.max(0,Math.min(255,Math.round(f>1?v+(255-v)*(f-1):v*f)));return`rgb(${m(r)},${m(gg)},${m(b)})`}
@@ -96,3 +104,61 @@ function volcano(g,x,y,u){const w=70*u,h=50*u;let gr=g.createLinearGradient(x-w/
   g.fillStyle='rgba(90,80,90,.45)';for(let k=0;k<4;k++){g.beginPath();g.arc(x+k*5*u,y-h-10*u-k*10*u,(7+k*3)*u,0,7);g.fill()}}
 function basalt(g,x,y,u,R){g.fillStyle='#2a1a1a';const n=3;for(let k=0;k<n;k++){const h=(10+R()*14)*u;g.fillRect(x+(k-1)*6*u-3*u,y-h,6*u,h)}g.fillStyle='rgba(255,120,40,.6)';g.fillRect(x-1*u,y-3*u,2*u,3*u)}
 function rock(g,x,y,u,P){g.fillStyle=P.rock2;g.beginPath();g.moveTo(x-7*u,y);g.lineTo(x-4*u,y-6*u);g.lineTo(x+3*u,y-7*u);g.lineTo(x+7*u,y);g.fill();g.fillStyle='rgba(255,255,255,.25)';g.beginPath();g.moveTo(x-4*u,y-6*u);g.lineTo(x+3*u,y-7*u);g.lineTo(x,y-3*u);g.fill()}
+
+const ROAD={desert:'#f3c48c',industrial:'#d8e6f4',nature:'#c9b07a',cyber:'#6a4a42'};
+// flat stone disc a level marker stands on; boss levels get a ring of wooden stakes
+function pad(g,x,y,u,boss,id){const rx=(boss?21:15)*u,ry=rx*.36;
+  g.fillStyle='rgba(20,10,10,.3)';g.beginPath();g.ellipse(x,y+2.5*u,rx+2*u,ry+2*u,0,0,7);g.fill();
+  g.fillStyle=id==='cyber'?'#3a2a2a':'#8a8f9e';g.beginPath();g.ellipse(x,y+1.5*u,rx,ry,0,0,7);g.fill();
+  g.fillStyle=id==='cyber'?'#5a4444':'#b9bfcc';g.beginPath();g.ellipse(x,y,rx*.9,ry*.8,0,0,7);g.fill();
+  if(boss){for(let k=0;k<9;k++){const a=Math.PI*(.05+k*.9/8),sx=x-Math.cos(a)*rx*1.25,sy=y+Math.sin(a)*ry*1.3,h=(9+(k%2)*3)*u;
+    g.fillStyle='#4a2f1b';g.beginPath();g.moveTo(sx-2*u,sy);g.lineTo(sx-2*u,sy-h);g.lineTo(sx,sy-h-3.5*u);g.lineTo(sx+2*u,sy-h);g.lineTo(sx+2*u,sy);g.fill();g.fillStyle='#7a5232';g.fillRect(sx-2*u,sy-h,1.2*u,h)}}}
+// plank bridge on two sagging ropes; little gold pennants once it leads somewhere you've opened
+function bridge(g,x1,y1,x2,y2,u,open){const sag=26*u,q=t=>{const a=1-t;return[a*a*x1+2*a*t*(x1+x2)/2+t*t*x2,a*a*y1+2*a*t*((y1+y2)/2+sag)+t*t*y2]};
+  const rope=(dy)=>{g.beginPath();for(let k=0;k<=24;k++){const [x,y]=q(k/24);k?g.lineTo(x,y+dy):g.moveTo(x,y+dy)}g.stroke()};
+  g.strokeStyle='rgba(10,8,20,.35)';g.lineWidth=3*u;rope(4*u);
+  const n=Math.max(8,Math.round(Math.hypot(x2-x1,y2-y1)/(9*u)));
+  for(let k=1;k<n;k++){const [x,y]=q(k/n);g.fillStyle=k%3?'#9a6a3c':'#86592f';g.fillRect(x-3.2*u,y-2.5*u,6.4*u,6*u);g.fillStyle='#5a3a1e';g.fillRect(x-3.2*u,y+2.5*u,6.4*u,1.4*u)}
+  g.strokeStyle='#d9b98a';g.lineWidth=1.6*u;rope(-1.5*u);
+  // handrail with hangers
+  g.strokeStyle='#c9a676';g.lineWidth=1.3*u;rope(-14*u);
+  for(let k=2;k<n-1;k+=2){const [x,y]=q(k/n);g.beginPath();g.moveTo(x,y-14*u);g.lineTo(x,y-2*u);g.stroke()}
+  for(const [x,y] of [q(.06),q(.94)]){g.fillStyle='#4a2f1b';g.fillRect(x-2*u,y-18*u,4*u,20*u);g.fillStyle='#7a5232';g.fillRect(x-2*u,y-18*u,1.3*u,20*u);
+    if(open){g.fillStyle='#ffd23a';g.beginPath();g.moveTo(x+2*u,y-18*u);g.lineTo(x+11*u,y-15*u);g.lineTo(x+2*u,y-12*u);g.fill()}}}
+// small rock chunks floating beside an island
+function shards(g,i,Wm,Hm,u){const s=ISLES[i],P=PAL[CHAPTERS[i].id],R=mulberry(500+i),x=s.c[0]*Wm,y=s.c[1]*Hm,rw=s.r[0]*Wm,rh=s.r[1]*Hm;
+  [[-1.18,.9,1],[1.2,1.5,.8],[-1.08,2.3,.6],[1.12,.35,.5]].forEach(([fx,fy,k])=>{const px=x+fx*rw,py=y+fy*rh,w=(18+R()*10)*u*k,h=w*(1.1+R()*.5);
+    g.fillStyle=P.rock2;g.beginPath();g.moveTo(px-w/2,py);g.lineTo(px-w*.2,py+h*.7);g.lineTo(px+w*.05,py+h);g.lineTo(px+w*.3,py+h*.55);g.lineTo(px+w/2,py);g.closePath();g.fill();
+    g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.moveTo(px+w*.05,py);g.lineTo(px+w/2,py);g.lineTo(px+w*.3,py+h*.55);g.lineTo(px+w*.05,py+h);g.fill();
+    g.fillStyle=P.top2;g.beginPath();g.ellipse(px,py,w/2,w*.16,0,0,7);g.fill();g.fillStyle=P.top;g.beginPath();g.ellipse(px-w*.05,py-w*.03,w*.38,w*.1,0,0,7);g.fill()})}
+// a few distant birds, plain ink strokes
+function birds(g,Wm,Hm,u,R){g.strokeStyle='rgba(10,14,40,.6)';g.lineWidth=1.6*u;g.lineCap='round';
+  for(let f=0;f<4;f++){const fx=(.08+f*.25+R()*.08)*Wm,fy=(.12+R()*.12)*Hm;for(let k=0;k<3+f%2;k++){const bx=fx+k*14*u+R()*6*u,by=fy+(k%2)*7*u+R()*4*u,w=(5+R()*2)*u;
+    g.beginPath();g.moveTo(bx-w,by-w*.5);g.quadraticCurveTo(bx-w*.4,by-w*.6,bx,by);g.quadraticCurveTo(bx+w*.4,by-w*.6,bx+w,by-w*.5);g.stroke()}}}
+// the next chapter shows only as a dark outline inside the fog
+function hiddenIsle(g,x,y,rw,rh){g.fillStyle='rgba(30,32,78,.35)';g.beginPath();g.ellipse(x,y,rw,rh,0,Math.PI,0);
+  g.lineTo(x+rw*.95,y+rh*.3);g.lineTo(x+rw*.5,y+rh*1.6);g.lineTo(x+rw*.15,y+rh*2.4);g.lineTo(x-rw*.1,y+rh*1.9);g.lineTo(x-rw*.45,y+rh*2.2);g.lineTo(x-rw*.95,y+rh*.3);g.closePath();g.fill();
+  g.fillStyle='rgba(30,32,78,.4)';[[-.3,.55,.13],[-.12,.95,.16],[.1,1.25,.2],[.32,.8,.14]].forEach(([fx,fh,fw])=>{const tx=x+fx*rw,w=fw*rw,h=fh*rh;g.beginPath();g.moveTo(tx-w/2,y);g.lineTo(tx-w/2,y-h);g.lineTo(tx,y-h-w*.7);g.lineTo(tx+w/2,y-h);g.lineTo(tx+w/2,y);g.fill()});g.fillRect(x-rw*.4,y-rh*.45,rw*.85,rh*.45)}
+// a clean, flat-shaded billow line where the fog starts, so it reads as a cloud wall instead of a blur
+function fogEdge(g,x,Hm,u,R){const pts=[];let y=-30*u;
+  while(y<Hm+60*u){const r=(26+R()*40)*u;pts.push([x+Math.sin(y/(Hm*.17))*30*u+(R()-.5)*22*u,y,r]);y+=r*(.75+R()*.35)}
+  const body=()=>{g.beginPath();g.moveTo(x+90*u,-10);pts.forEach(([px,py])=>g.lineTo(px,py));g.lineTo(x+90*u,Hm+10);g.closePath()};
+  g.fillStyle='#454a86';body();g.fill();
+  const sg=g.createLinearGradient(x+60*u,0,x+220*u,0);sg.addColorStop(0,'rgba(69,74,134,1)');sg.addColorStop(1,'rgba(69,74,134,0)');g.fillStyle=sg;g.fillRect(x+60*u,0,160*u,Hm);
+  pts.forEach(([px,py,r])=>{g.fillStyle='#2e3168';g.beginPath();g.arc(px+2*u,py+5*u,r,0,7);g.fill()});
+  pts.forEach(([px,py,r])=>{g.fillStyle='#454a86';g.beginPath();g.arc(px,py,r,0,7);g.fill()});
+  pts.forEach(([px,py,r])=>{g.fillStyle='#5e63a2';g.beginPath();g.arc(px-r*.18,py-r*.22,r*.66,0,7);g.fill()});
+  // a few loose puffs drifting off the wall
+  for(let k=0;k<5;k++){const py=(.1+k*.2+R()*.06)*Hm,px=x-(40+R()*70)*u,r=(10+R()*12)*u;g.fillStyle='#454a86';g.beginPath();g.ellipse(px,py,r*1.8,r,0,0,7);g.fill();g.fillStyle='#5e63a2';g.beginPath();g.ellipse(px-r*.3,py-r*.25,r*1.1,r*.55,0,0,7);g.fill()}}
+
+// flat moon with soft crater shapes
+function moon(g,x,y,r){g.fillStyle='rgba(255,240,210,.08)';g.beginPath();g.arc(x,y,r*1.6,0,7);g.fill();g.fillStyle='#f6e9c8';g.beginPath();g.arc(x,y,r,0,7);g.fill();
+  g.fillStyle='#e2d0a6';g.beginPath();g.arc(x+r*.2,y+r*.12,r*.86,-.4,2.2);g.arc(x,y,r,2.2,-.4,true);g.fill();
+  g.fillStyle='#d8c493';[[-.35,-.25,.2],[.25,.3,.15],[.3,-.35,.1],[-.1,.45,.08]].forEach(([a,b,c])=>{g.beginPath();g.arc(x+a*r,y+b*r,c*r,0,7);g.fill()})}
+// two far mountain ranges along the horizon
+function ranges(g,Wm,Hm,u){[[.62,'#3a3a82',mulberry(21),70],[.72,'#4a4590',mulberry(22),55]].forEach(([fy,col,R,h])=>{g.fillStyle=col;g.beginPath();g.moveTo(0,Hm);let x=0;g.lineTo(0,Hm*fy);
+  while(x<Wm){const w=(60+R()*90)*u,pk=(h*.5+R()*h)*u;g.lineTo(x+w*.5,Hm*fy-pk);g.lineTo(x+w*.62,Hm*fy-pk*.82);g.lineTo(x+w,Hm*fy+R()*10*u);x+=w}g.lineTo(Wm,Hm);g.closePath();g.fill()})}
+// a band of flat cartoon cloud puffs: shadow color body, lighter tops
+function puffBand(g,Wm,y,u,R,c1,c2,a){g.globalAlpha=a;const pts=[];for(let x=-40*u;x<Wm+40*u;){const r=(26+R()*34)*u;pts.push([x,y+(R()-.5)*22*u,r]);x+=r*(1+R()*.5)}
+  g.fillStyle=c1;pts.forEach(([x,yy,r])=>{g.beginPath();g.arc(x,yy,r,0,7);g.fill()});g.fillRect(0,y,Wm,g.canvas.height);
+  g.fillStyle=c2;pts.forEach(([x,yy,r])=>{g.beginPath();g.arc(x-r*.15,yy-r*.25,r*.7,0,7);g.fill()});g.globalAlpha=1}
