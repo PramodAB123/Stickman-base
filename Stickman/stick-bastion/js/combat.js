@@ -70,7 +70,10 @@ function updateWells(dt){
   S.wells=S.wells.filter(h=>!h.done);
 }
 function damageEnemy(e,dmg,o){
-  if(e.dead)return;e.hp-=dmg;if(!o.dot)e.flash=.08;
+  if(e.dead)return;
+  // Molten Armor: the Magma Sentinel shrugs off part of every hit until it drops to half HP
+  if(e.d.armor&&e.hp>e.maxHp*.5){dmg*=1-e.d.armor;if(e.hp-dmg<=e.maxHp*.5&&!e.cracked){e.cracked=1;floater(e.core.x,e.topY-10,'ARMOR BROKEN','#ffb04a',.85);for(let i=0;i<10;i++)S.parts.push({type:'debris',x:e.core.x+rand(-20,20),y:e.core.y+rand(-20,20),vx:rand(-200,200),vy:rand(-380,-120),life:rand(1,1.6),max:1.6,size:rand(4,8),g:1100,rot:rand(0,6),vr:rand(-12,12),col:i%2?'#3a2a2e':'#ff7a2a',floor:GY-2})}}
+  e.hitT=0;e.hp-=dmg;if(!o.dot)e.flash=.08;
   if(o.ix)e.kx+=Math.max(0,o.ix)*(o.blast?.5:.12)/e.s;
   if(e.hp<=0)killEnemy(e,o);
 }
@@ -157,7 +160,10 @@ function updateEproj(dt){
   for(const p of S.eproj){
     p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot=Math.atan2(p.vy,p.vx);
     if(p.x<=WALL.x1&&p.y>=WALL.top-28){p.dead=true;
-      explodeFx(p.x,p.y,p.kind==='bomb'||p.kind==='fireball'?55:p.kind==='bolt'?18:34);
+      if(p.kind==='tox'){(S.clouds=S.clouds||[]).push({x:p.x-30,y:p.y,t:4,tick:.3,dmg:p.dmg*.35})}
+      if(p.kind==='glob'||p.kind==='tox'){for(let i=0;i<10;i++)S.parts.push({type:'drop',x:p.x,y:p.y,vx:rand(-160,60),vy:rand(-220,-40),life:.6,max:.6,size:rand(2,4),g:900,col:'#9cff3a'})}
+      if(p.kind==='lwave'){for(let i=0;i<12;i++)S.parts.push({type:'fire',x:p.x+rand(-10,10),y:GY-rand(4,30),vx:rand(-120,80),vy:rand(-300,-100),life:rand(.3,.6),max:.6,size:rand(4,9),g:700})}
+      explodeFx(p.x,p.y,p.kind==='bomb'||p.kind==='fireball'?55:p.kind==='bolt'||p.kind==='spear'?18:34);
       hitWall(S.demo?0:p.dmg,p.x,p.y);if(!S.demo)hurtGunner(nearGunner(p.x,p.y,90),p.dmg*.9);
     }else if(p.y>=GY){p.dead=true;explodeFx(p.x,GY-4,34)}
     else if(p.x<-50)p.dead=true;

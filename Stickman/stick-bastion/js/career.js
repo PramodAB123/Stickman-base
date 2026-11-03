@@ -5,9 +5,12 @@ const CHAPTERS = [
   { id: 'industrial', name: 'Frozen Foundry', icon: '❄️', col: '#8fdcff' },
   { id: 'nature', name: 'Jungle Citadel', icon: '🌿', col: '#73e38c' },
   { id: 'cyber', name: 'Inferno Core', icon: '🔥', col: '#ff7a3a' },
+  { id: 'volcanic', name: 'Volcanic Wastelands', icon: '', col: '#ff9a4a' },
+  { id: 'crystal', name: 'Crystal Caverns', icon: '', col: '#c48cff' },
 ];
+const NLV = CHAPTERS.length * 4;
 const LEVELS = [];
-for (let k = 1; k <= 16; k++) {
+for (let k = 1; k <= NLV; k++) {
   const ch = Math.floor((k - 1) / 4), bossLv = k % 4 === 0;
   LEVELS.push({
     k, ch, map: CHAPTERS[ch].id, waves: 4 + Math.floor((k - 1) / 3), off: Math.round((k - 1) * .65),
@@ -15,7 +18,7 @@ for (let k = 1; k <= 16; k++) {
   });
 }
 // what a level throws at you (used for the preview)
-function levelEnemies(L) { const top = L.off + L.waves; const ids = Object.keys(UNLOCK).filter(id => UNLOCK[id] <= top).sort((a, b) => UNLOCK[b] - UNLOCK[a]).slice(0, 4); if (L.boss) ids.unshift(L.boss); return ids.slice(0, 4) }
+function levelEnemies(L) { const top = L.off + L.waves, ord = id => UNLOCK[id] != null ? UNLOCK[id] : 100 + LATE[id].sv; const ids = Object.keys(UNLOCK).filter(id => UNLOCK[id] <= top).concat(Object.keys(LATE).filter(id => L.ch >= LATE[id].ch)).sort((a, b) => ord(b) - ord(a)).slice(0, 4); if (L.boss) ids.unshift(L.boss); return ids.slice(0, 4) }
 
 const UPG = [
   { id: 'chest', ic: '💰', name: 'War Chest', desc: '+40 starting coins', max: 5, cost: [80, 160, 280, 440, 650] },
@@ -24,11 +27,11 @@ const UPG = [
   { id: 'rate', ic: '⚡', name: 'Fast Hands', desc: '+5% fire rate', max: 5, cost: [120, 240, 400, 600, 880] },
   { id: 'bounty', ic: '🪙', name: 'Bounty Hunter', desc: '+8% coins per kill', max: 5, cost: [90, 180, 320, 500, 720] },
 ];
-const CAR = Object.assign({ stars: Array(16).fill(0), cr: 0, up: {}, sel: 0, own: [] }, store.get('career', {}));
+const CAR = Object.assign({ stars: Array(NLV).fill(0), cr: 0, up: {}, sel: 0, own: [] }, store.get('career', {}));
 if (!Array.isArray(CAR.own)) CAR.own = [];
 // premium guns are usable in battle only after they are bought in the Armory
 const owned = id => !WMAP[id].prem || CAR.own.includes(id);
-if (CAR.stars.length < 16) CAR.stars = CAR.stars.concat(Array(16 - CAR.stars.length).fill(0));
+if (CAR.stars.length < NLV) CAR.stars = CAR.stars.concat(Array(NLV - CAR.stars.length).fill(0));
 const saveCar = () => store.set('career', CAR);
 const perk = id => CAR.up[id] || 0;
 // TESTING: true opens every level. Set to false for the real release.
@@ -41,7 +44,7 @@ const chapterUnlocked = c => UNLOCK_ALL || c === 0 || (chapterUnlocked(c - 1) &&
 function unlocked(i) { if (UNLOCK_ALL || i === 0) return true; if (!chapterUnlocked(Math.floor(i / 4))) return false; return i % 4 === 0 || (unlocked(i - 1) && CAR.stars[i - 1] > 0) }
 const OBJ = ['Complete the level', 'Keep base HP above 50%', 'No gunner knocked out'];
 const starTotal = () => CAR.stars.reduce((a, b) => a + b, 0);
-function nextLevel() { let last = 0; for (let i = 0; i < 16; i++) { if (!unlocked(i)) break; last = i; if (!CAR.stars[i]) return i } return last }
+function nextLevel() { let last = 0; for (let i = 0; i < NLV; i++) { if (!unlocked(i)) break; last = i; if (!CAR.stars[i]) return i } return last }
 
 // hooks used by the game
 const careerOn = () => S && S.career;
@@ -51,11 +54,11 @@ function careerWin() {
   const L = S.career, i = L.k - 1, hpOk = S.wallHP / S.wallMax >= .5, fewOk = !S.kos;
   const got = 1 + (hpOk ? 1 : 0) + (fewOk ? 1 : 0), old = CAR.stars[i], first = old === 0;
   const earn = Math.round(L.reward * (first ? 1 : .35)) + Math.max(0, got - old) * 25;
-  CAR.stars[i] = Math.max(old, got); CAR.cr += earn; if (first && i < 15 && unlocked(i + 1)) CAR.sel = i + 1; saveCar();
+  CAR.stars[i] = Math.max(old, got); CAR.cr += earn; if (first && i < NLV - 1 && unlocked(i + 1)) CAR.sel = i + 1; saveCar();
   S.mode = 'won'; hudHide(); SND.play('clear');
   const st = $('winStars'); st.innerHTML = [0, 1, 2].map(j => `<i class="${j < got ? 'on' : ''}" style="animation-delay:${.25 + j * .3}s">★</i>`).join('');
   $('winLvl').textContent = 'CHAPTER ' + (L.ch + 1) + ' · LEVEL ' + L.k;
   $('winObj').innerHTML = [[OBJ[0], true], [OBJ[1], hpOk], [OBJ[2], fewOk]].map(([t, ok]) => `<div class="${ok ? 'ok' : ''}">${ok ? '★' : '☆'} ${t}</div>`).join('');
-  $('winCr').textContent = '+' + earn; $('nextBtn').classList.toggle('hidden', i >= 15 || !unlocked(i + 1));
+  $('winCr').textContent = '+' + earn; $('nextBtn').classList.toggle('hidden', i >= NLV - 1 || !unlocked(i + 1));
   setTimeout(() => showScreen('win'), 900);
 }

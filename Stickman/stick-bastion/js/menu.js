@@ -3,20 +3,22 @@
 const TABS=['career','upgrades','guns','premium','survival'];
 let hubTab=store.get('tab','career');if(!TABS.includes(hubTab))hubTab='career';
 // island layout on the chapter map: one long strip, chapters left to right (fractions of the strip's width / height)
-const MAPW=2.2; // strip width as a multiple of the visible map area
-const ISLES=[0,1,2,3].map(i=>{const cx=.125+.25*i,cy=i%2?.46:.4,rw=.1;
+const MAPW=3.3; // strip width as a multiple of the visible map area
+const NCH=CHAPTERS.length,ISLES=CHAPTERS.map((_,i)=>{const cx=(i+.5)/NCH,cy=i%2?.46:.4,rw=.4/NCH;
   return{c:[cx,cy],r:[rw,.145],nodes:[-.7,-.24,.24,.7].map((f,k)=>[cx+f*rw,cy+[.08,.11,.11,.06][k]]),lm:[cx+.004,cy-.1],lab:[cx,.035]}});
 // a chapter is hidden in smoke until the player reaches it (a star on the previous chapter's boss level, or on any of its own levels)
 const chapterOpen=c=>chapterUnlocked(c);
 // you can always see the chapters you've reached plus the next one; everything past that is hidden in smoke
 const chapterSeen=c=>chapterOpen(c);
-const seenCount=()=>[0,1,2,3].filter(chapterSeen).length;
+const seenCount=()=>ISLES.filter((_,i)=>chapterSeen(i)).length;
 const NODEPOS=ISLES.flatMap(s=>s.nodes);
 const THEME={
   desert:{top:['#ffc27a','#e0803e'],cliff:['#c0602f','#4e1e15'],glow:'255,160,70'},
   industrial:{top:['#f2f8ff','#a9c8e8'],cliff:['#5d7fa8','#1c2a48'],glow:'120,200,255'},
   nature:{top:['#9be56a','#3f9c3c'],cliff:['#7a6440','#2a2618'],glow:'110,230,120'},
   cyber:{top:['#4a3a3a','#241a1c'],cliff:['#3a2422','#0e0708'],glow:'255,90,40'},
+  volcanic:{top:['#ff9a4a','#7a2a2a'],cliff:['#4a2430','#140a10'],glow:'255,120,40'},
+  crystal:{top:['#9a8cff','#3a2a8a'],cliff:['#2a2460','#0a0a24'],glow:'190,120,255'},
 };
 
 function showTab(t){
@@ -33,7 +35,7 @@ function showTab(t){
   if(t==='survival'){const m=store.get('map','industrial');if(MAP.id!==m){applyMap(m);S=freshState(true)}renderMapPick()}
   hubChips();
 }
-function hubChips(){$('crTxt').textContent=CAR.cr;$('stTxt').textContent=starTotal()+'/48'}
+function hubChips(){$('crTxt').textContent=CAR.cr;$('stTxt').textContent=starTotal()+'/'+NLV*3}
 document.querySelector('.bnav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;SND.unlock();SND.play('click');showTab(b.dataset.tab)});
 $('backBtn').onclick=()=>{SND.play('click');showTab('career')};
 
@@ -42,7 +44,9 @@ const CH_SVG={
   desert:'<path d="M12 21V5.5a2 2 0 014 0V21M12 13H9a2 2 0 01-2-2V8.5M16 15h2a2 2 0 002-2v-2.5M9 21h10"/>',
   industrial:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/>',
   nature:'<path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/>',
-  cyber:'<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.5 3-5.5 3.5-9 2 1.5 3 3.5 3 5.5 1-1 1.6-2.2 1.8-3.5 2.3 2 3.7 4.3 3.7 7 0 3.4-2.5 6-5.5 6z"/>'};
+  cyber:'<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.5 3-5.5 3.5-9 2 1.5 3 3.5 3 5.5 1-1 1.6-2.2 1.8-3.5 2.3 2 3.7 4.3 3.7 7 0 3.4-2.5 6-5.5 6z"/>',
+  volcanic:'<path d="M3 20l6-10h6l6 10zM9 10l1.5 3 1.5-2 1.5 2 1.5-3M10.5 6.5c0-1.6 1.4-2.2 1.5-3.5 1 1 2 2 1.5 3.5"/>',
+  crystal:'<path d="M12 3l3 4.5V17l-3 4-3-4V7.5zM6 9.5l2 2.5v6l-2 1.5-2-2v-5.5zM18 9.5l2 2.5v5.5l-2 2-2-1.5v-6z"/>'};
 const MICO={
   lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="1.6"/><path class="o" d="M8.2 10.5V8a3.8 3.8 0 017.6 0v2.5"/></svg>',
   boss:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-4.9 0-8.5 3.4-8.5 8 0 2.6 1.2 4.6 3 5.8V20a1 1 0 001 1h9a1 1 0 001-1v-3.7c1.8-1.2 3-3.2 3-5.8 0-4.6-3.6-8-8.5-8z"/><path class="k" d="M8.6 9.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM15.4 9.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM12 14.3l-1.2 2h2.4zM9.5 21v-2.6M12 21v-2.6M14.5 21v-2.6"/></svg>',
@@ -64,7 +68,7 @@ function renderNodes(){
       <span class="md"><span class="num">${lk?MICO.lock:L.boss?MICO.boss:L.k}</span></span>${L.boss?'<span class="btag">BOSS</span>':''}${isCur?MICO.you:''}</button>`}).join('');
 }
 // scroll the strip so a level sits in the middle of the view
-function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=3?1e9:Math.max(0,(.25*(n+1)+.07)*$('mapIn').clientWidth-w.clientWidth)}
+function mapMaxScroll(){const w=$('mapWrap'),n=seenCount();return n>=NCH-1?1e9:Math.max(0,((n+1)/NCH+.07*4/NCH)*$('mapIn').clientWidth-w.clientWidth)}
 $('mapWrap').addEventListener('scroll',()=>{const w=$('mapWrap'),m=mapMaxScroll();if(w.scrollLeft>m)w.scrollLeft=m});
 function centerMap(i,smooth){const w=$('mapWrap'),x=NODEPOS[i][0]*$('mapIn').clientWidth-w.clientWidth/2;w.scrollTo({left:Math.min(mapMaxScroll(),Math.max(0,x)),behavior:smooth?'smooth':'auto'})}
 // drag / wheel scrolling (touch scrolls natively); a drag never counts as a tap on a level

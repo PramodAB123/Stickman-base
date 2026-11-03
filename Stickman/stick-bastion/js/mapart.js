@@ -13,7 +13,7 @@ function drawMap(){
   ranges(g,Wm,Hm,u);
   puffBand(g,Wm,Hm*.3,u*.9,mulberry(3),'#3a4592','#48539f',.55);
   // islands left to right, then low clouds along the bottom
-  [0,1,2,3].forEach(i=>{if(chapterSeen(i)){shards(g,i,Wm,Hm,u);paintIsle(g,i,Wm,Hm,u)}});
+  ISLES.forEach((_,i)=>{if(chapterSeen(i)){shards(g,i,Wm,Hm,u);paintIsle(g,i,Wm,Hm,u)}});
   birds(g,Wm,Hm,u,mulberry(5));
   puffBand(g,Wm,Hm*1.0,u*1.1,mulberry(7),'#3f3d84','#514e98',1);puffBand(g,Wm,Hm*1.09,u*1.4,mulberry(8),'#4a4790','#5e5aa6',1);
   // trail: a dirt road across each island, rope bridges between islands, a stone pad under every level marker
@@ -29,7 +29,7 @@ function drawMap(){
   P.forEach(([x,y],i)=>{if(chapterSeen(Math.floor(i/4)))pad(g,x,y,u,LEVELS[i].boss,CHAPTERS[LEVELS[i].ch].id)});
   // chapters further ahead than the next one are not drawn at all: just a wall of smoke
   ISLES.forEach((s,i)=>{if(!chapterSeen(i))smoke(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,Hm,u,mulberry(200+i))});
-  {const i=seenCount();if(i<4){const s=ISLES[i];hiddenIsle(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,s.r[1]*Hm);fogEdge(g,(s.c[0]-s.r[0]*1.25)*Wm,Hm,u,mulberry(300+i))}}
+  {const i=seenCount();if(i<ISLES.length){const s=ISLES[i];hiddenIsle(g,s.c[0]*Wm,s.c[1]*Hm,s.r[0]*Wm,s.r[1]*Hm);fogEdge(g,(s.c[0]-s.r[0]*1.25)*Wm,Hm,u,mulberry(300+i))}}
   if(!mapImgsReady&&MAPIDS.some(id=>!MAPS[id].img.complete)){Promise.all(MAPIDS.map(id=>MAPS[id].img.decode().catch(()=>0))).then(()=>{mapImgsReady=true;if(hubTab==='career')drawMap()})}
 }
 function smoke(g,x,y,rw,Hm,u,R){
@@ -48,6 +48,8 @@ const PAL={
   industrial:{top:'#f4faff',top2:'#bcd6ef',rock:'#7e9cc4',rock2:'#3c5680',dark:'#18233f'},
   nature:{top:'#8fdc5a',top2:'#3f9d3a',rock:'#8a7650',rock2:'#4a3d26',dark:'#211a10'},
   cyber:{top:'#4a3434',top2:'#2a1c1d',rock:'#4a302c',rock2:'#24130f',dark:'#0b0505'},
+  volcanic:{top:'#5a3a44',top2:'#3a2230',rock:'#4a2a34',rock2:'#2a141c',dark:'#100608'},
+  crystal:{top:'#4a4a8a',top2:'#2c2a64',rock:'#2e2a62',rock2:'#191640',dark:'#08071a'},
 };
 function paintIsle(g,i,Wm,Hm,u){
   const s=ISLES[i],id=CHAPTERS[i].id,P=PAL[id],R=mulberry(40+i*7),x=s.c[0]*Wm,y=s.c[1]*Hm,rw=s.r[0]*Wm,rh=s.r[1]*Hm;
@@ -65,11 +67,13 @@ function paintIsle(g,i,Wm,Hm,u){
   // waterfalls / lava falls down the front
   if(id==='nature')for(const f of [.28,.62])fall(g,x-rw+f*rw*2,y+rh*.55,7*u,rh*3.2,'150,225,255',u);
   if(id==='cyber')fall(g,x+rw*.42,y+rh*.6,6*u,rh*2.2,'255,120,30',u);
+  if(id==='volcanic')for(const f of [.3,.7])fall(g,x-rw+f*rw*2,y+rh*.6,6*u,rh*2.4,'255,110,30',u);
+  if(id==='crystal')for(const f of [.35,.72])fall(g,x-rw+f*rw*2,y+rh*.55,7*u,rh*3,'90,200,255',u);
   // ---- top surface with a thick front lip
   topPath(g,x,y,rw,rh,mulberry(90+i));gr=g.createLinearGradient(0,y-rh,0,y+rh);gr.addColorStop(0,P.top);gr.addColorStop(1,P.top2);g.fillStyle=gr;g.fill();
   g.save();g.clip();
   for(let k=0;k<40;k++){g.fillStyle=R()<.5?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';g.beginPath();g.ellipse(x+(R()-.5)*rw*2,y+(R()-.5)*rh*2,(8+R()*30)*u,(3+R()*8)*u,0,0,7);g.fill()}
-  if(id==='cyber')lavaRivers(g,x,y,rw,rh,u,R);
+  if(id==='cyber'||id==='volcanic')lavaRivers(g,x,y,rw,rh,u,R);
   if(id==='nature'){g.strokeStyle='#5cc8f0';g.lineWidth=7*u;g.lineCap='round';g.beginPath();g.moveTo(x-rw*.7,y-rh*.6);g.bezierCurveTo(x-rw*.4,y,x-rw*.1,y-rh*.2,x-rw*.44,y+rh*.95);g.stroke();g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=2*u;g.stroke()}
   g.restore();
   g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=2*u;topPath(g,x,y,rw,rh,mulberry(90+i));g.stroke();
@@ -84,6 +88,8 @@ function paintIsle(g,i,Wm,Hm,u){
   if(id==='industrial'){[[-.7,-.55,1.3],[-.4,-.75,1],[.75,-.5,1.1],[.45,-.8,.8]].forEach(([a,b,k])=>add(a,b,(px,py)=>peak(g,px,py,k*u)));for(let k=0;k<5;k++)add((R()-.5)*1.7,(R()-.2)*1.1,(px,py)=>crystal(g,px,py,u*(.8+R()*.6),R));for(let k=0;k<6;k++)add((R()-.5)*1.8,(R()-.4)*1.2,(px,py)=>pine(g,px,py,u*(.8+R()*.4)))}
   if(id==='nature'){for(let k=0;k<12;k++)add((R()-.5)*1.85,(R()-.55)*1.4,(px,py)=>tree(g,px,py,u*(.9+R()*.7),R));for(let k=0;k<3;k++)add((R()-.5)*1.4,(R()-.2)*.9,(px,py)=>ruin(g,px,py,u))}
   if(id==='cyber'){add(-.62,-.35,(px,py)=>volcano(g,px,py,u*1.3));add(.72,-.4,(px,py)=>volcano(g,px,py,u*.9));for(let k=0;k<6;k++)add((R()-.5)*1.7,(R()-.3)*1.2,(px,py)=>basalt(g,px,py,u*(.8+R()*.5),R))}
+  if(id==='volcanic'){add(.66,-.45,(px,py)=>volcano(g,px,py,u*1.4));add(-.7,-.4,(px,py)=>volcano(g,px,py,u*.8));for(let k=0;k<6;k++)add((R()-.5)*1.7,(R()-.3)*1.2,(px,py)=>basalt(g,px,py,u*(.8+R()*.5),R))}
+  if(id==='crystal'){for(let k=0;k<9;k++)add((R()-.5)*1.8,(R()-.4)*1.3,(px,py)=>gem(g,px,py,u*(.8+R()*.7),R,k%2))}
   const bx=s.lm[0]*Wm,by=s.lm[1]*Hm+Hm*.06;items.sort((a,b)=>a.py-b.py).forEach(it=>{if(!it.base&&Math.abs(it.px-bx)<rw*.52&&Math.abs(it.py-by)<rh*.62)return;it.fn(it.px,it.py)});
 }
 function fall(g,x,y,w,h,c,u){const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,`rgba(${c},.95)`);gr.addColorStop(.7,`rgba(${c},.5)`);gr.addColorStop(1,`rgba(${c},0)`);g.fillStyle=gr;g.fillRect(x-w/2,y,w,h);
@@ -105,12 +111,14 @@ function volcano(g,x,y,u){const w=70*u,h=50*u;let gr=g.createLinearGradient(x-w/
 function basalt(g,x,y,u,R){g.fillStyle='#2a1a1a';const n=3;for(let k=0;k<n;k++){const h=(10+R()*14)*u;g.fillRect(x+(k-1)*6*u-3*u,y-h,6*u,h)}g.fillStyle='rgba(255,120,40,.6)';g.fillRect(x-1*u,y-3*u,2*u,3*u)}
 function rock(g,x,y,u,P){g.fillStyle=P.rock2;g.beginPath();g.moveTo(x-7*u,y);g.lineTo(x-4*u,y-6*u);g.lineTo(x+3*u,y-7*u);g.lineTo(x+7*u,y);g.fill();g.fillStyle='rgba(255,255,255,.25)';g.beginPath();g.moveTo(x-4*u,y-6*u);g.lineTo(x+3*u,y-7*u);g.lineTo(x,y-3*u);g.fill()}
 
-const ROAD={desert:'#f3c48c',industrial:'#d8e6f4',nature:'#c9b07a',cyber:'#6a4a42'};
+const ROAD={desert:'#f3c48c',industrial:'#d8e6f4',nature:'#c9b07a',cyber:'#6a4a42',volcanic:'#6a4a42',crystal:'#5a5a9a'};
+// flat crystal cluster (violet or cyan), no glow
+function gem(g,x,y,u,R,c){const cols=c?['#c48cff','#8a5ae0','#f0dcff']:['#7fd8ff','#3f9ad8','#e0f6ff'];for(let k=0;k<3;k++){const h=(12+R()*16)*u*(k===1?1.3:1),dx=(k-1)*6*u,a=(k-1)*.35;g.save();g.translate(x+dx,y);g.rotate(a);g.fillStyle=cols[k===1?0:1];g.beginPath();g.moveTo(-4*u,0);g.lineTo(-4*u,-h*.72);g.lineTo(0,-h);g.lineTo(4*u,-h*.72);g.lineTo(4*u,0);g.fill();g.fillStyle=cols[2];g.globalAlpha=.6;g.fillRect(-2.4*u,-h*.78,1.4*u,h*.6);g.globalAlpha=1;g.restore()}}
 // flat stone disc a level marker stands on; boss levels get a ring of wooden stakes
 function pad(g,x,y,u,boss,id){const rx=(boss?21:15)*u,ry=rx*.36;
   g.fillStyle='rgba(20,10,10,.3)';g.beginPath();g.ellipse(x,y+2.5*u,rx+2*u,ry+2*u,0,0,7);g.fill();
-  g.fillStyle=id==='cyber'?'#3a2a2a':'#8a8f9e';g.beginPath();g.ellipse(x,y+1.5*u,rx,ry,0,0,7);g.fill();
-  g.fillStyle=id==='cyber'?'#5a4444':'#b9bfcc';g.beginPath();g.ellipse(x,y,rx*.9,ry*.8,0,0,7);g.fill();
+  g.fillStyle=id==='cyber'||id==='volcanic'?'#3a2a2a':id==='crystal'?'#3a3a6a':'#8a8f9e';g.beginPath();g.ellipse(x,y+1.5*u,rx,ry,0,0,7);g.fill();
+  g.fillStyle=id==='cyber'||id==='volcanic'?'#5a4444':id==='crystal'?'#5a5a94':'#b9bfcc';g.beginPath();g.ellipse(x,y,rx*.9,ry*.8,0,0,7);g.fill();
   if(boss){for(let k=0;k<9;k++){const a=Math.PI*(.05+k*.9/8),sx=x-Math.cos(a)*rx*1.25,sy=y+Math.sin(a)*ry*1.3,h=(9+(k%2)*3)*u;
     g.fillStyle='#4a2f1b';g.beginPath();g.moveTo(sx-2*u,sy);g.lineTo(sx-2*u,sy-h);g.lineTo(sx,sy-h-3.5*u);g.lineTo(sx+2*u,sy-h);g.lineTo(sx+2*u,sy);g.fill();g.fillStyle='#7a5232';g.fillRect(sx-2*u,sy-h,1.2*u,h)}}}
 // plank bridge on two sagging ropes; little gold pennants once it leads somewhere you've opened

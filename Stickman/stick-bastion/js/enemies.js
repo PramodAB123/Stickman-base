@@ -23,7 +23,18 @@ const ET = {
   warlord_mech: { name: 'Warlord Mech', h: 200, hp: 820, spd: 22, dmg: 55, rate: 1.6, coin: 250, cost: 0, w: 0, beh: 'melee', boss: 1, crit: [.43, .25], muz: [.12, .15], shot: 'shell', srate: 4.5, sdmg: 16 },
   void_dragon: { name: 'Void Dragon', h: 300, hp: 880, spd: 40, dmg: 18, rate: 2.4, coin: 320, cost: 0, w: 0, beh: 'bomb', boss: 1, fly: 1, alt: [200, 240], crit: [.35, .42], muz: [.27, .48] },
   goliath_mech: { name: 'Goliath War Mech', h: 250, hp: 900, spd: 24, dmg: 16, rate: 3.2, coin: 320, cost: 0, w: 0, beh: 'shoot', boss: 1, crit: [.41, .43], muz: [.18, .15], shot: 'shell', volley: 3, srate: 5, sdmg: 14, stopR: [235, 300] },
+  // ---- volcanic / crystal villains (chapters 5-6, survival wave 21+) ----
+  // Magma Sentinel: Molten Armor (takes 40% less damage until half HP), Lava Slam (every hit also strikes a gunner), Eruption Wave (lava rolls along the ground into the base)
+  magma_sentinel: { name: 'Magma Sentinel', h: 150, hp: 640, spd: 26, dmg: 38, rate: 1.9, coin: 60, cost: 8.5, w: .5, beh: 'melee', crit: [.28, .58], armor: .4, slam: 1, erupt: 1, pool: 1, late: 1 },
+  // Crystal Wraith: Crystal Spears (ranged), Rift Teleport (blinks forward), Shard Storm (spear burst once it drops below half HP)
+  crystal_wraith: { name: 'Crystal Wraith', h: 128, hp: 210, spd: 42, dmg: 13, rate: 2.2, coin: 44, cost: 6, w: .6, beh: 'shoot', fly: 1, alt: [532, 540], crit: [.34, .27], muz: [.77, .17], shot: 'spear', tele: 1, shards: 1, clean: 1, late: 1 },
+  // Storm Reaver: Chain Lightning (zaps a gunner and jumps to the next), Gale Dash (bursts of speed), Thunder Barrage (every third attack calls lightning on the base)
+  storm_reaver: { name: 'Storm Reaver', h: 112, hp: 230, spd: 66, dmg: 12, rate: 2.4, coin: 42, cost: 6.5, w: .6, beh: 'shoot', fly: 1, alt: [170, 260], crit: [.39, .39], muz: [.39, .45], shot: 'zap', dash: 1, storm: 1, clean: 1, late: 1 },
+  // Bioplague Overlord: Acid Spit (lobbed globs), Regeneration (heals when not hit for a moment), Toxic Cloud (poison that lingers on the base and hurts gunners)
+  bioplague_overlord: { name: 'Bioplague Overlord', h: 145, hp: 820, spd: 24, dmg: 20, rate: 2.6, coin: 70, cost: 9.5, w: .45, beh: 'shoot', crit: [.29, .57], muz: [.27, .7], shot: 'acid', regen: 1, toxic: 1, stopR: [150, 240], late: 1 },
 };
+// late villains: in career they appear from chapter ch (0-based) on, in survival from wave sv
+const LATE = { magma_sentinel: { ch: 4, sv: 21 }, storm_reaver: { ch: 4, sv: 23 }, crystal_wraith: { ch: 5, sv: 25 }, bioplague_overlord: { ch: 5, sv: 27 } };
 const UNLOCK = {
   rifle_grunt: 1, blade_raider: 2, heavy_gunner: 3, shield_brute: 4, bomb_runner: 5, mech_walker: 5, scout_drone: 6, wing_raider: 7, stealth_assassin: 8,
   healer_support: 9, hover_bike: 10, spiked_beast: 11, attack_drone: 12, mind_controller: 13, turret_carrier: 14, bomber_drone: 16, juggernaut: 18, sky_reaper: 20
@@ -95,11 +106,13 @@ function updateEnemy(e, dt) {
       if (tg.length) { const s = tg[Math.floor(Math.random() * tg.length)]; s.stun = 3; const J = gunnerJ(s); S.parts.push({ type: 'bolt', pts: [{ x: e.crit.x, y: e.crit.y }, { x: J.head.x, y: J.head.y }], x: e.x, y: e.y, life: .35, max: .35, g: 0, col: '190,90,255' }); floater(J.head.x, J.head.y - 30, 'STUNNED!', '#d08cff', .8); SND.play('zap') }
     }
   }
+  if (d.late && e.state !== 'cheer' && !e.demo && !S.demo) lateAbility(e, d, dt); if (e.dead) return;
   if (d.boss && d.shot === 'shell' && e.state !== 'cheer' && e.x < W - 60) { e.abT -= dt; if (e.abT <= 0) { e.abT = d.srate * rand(.8, 1.2); fireShell(e) } }
   switch (e.state) {
     case 'walk': {
       let sp = e.spd * slow;
       if (d.beh === 'charge') { const c = (Math.sin(e.t * 1.6) + 1) / 2; sp *= .5 + c * 1.6 }
+      if (e.dashT > 0) sp *= 4.2;
       e.x -= sp * dt; e.phase += dt * sp * .11 / Math.sqrt(e.s);
       if (!d.fly) {
         const sg = Math.sin(e.phase) > 0; if (sg !== e.ls) {
@@ -123,7 +136,7 @@ function updateEnemy(e, dt) {
     }
     case 'attack':
       if (e.x > e.contactX + 8) { e.state = 'walk'; break }
-      e.atkT -= dt; if (e.atkT <= 0) { e.atkT = d.rate; e.sw = 1; { const dd = d.dmg * (S.demo ? 0 : 1) * (1 + .04 * (S.wave - 1)); hitWall(dd, WALL.x1 + rand(-4, 2), GY - rand(.2, .7) * e.h); if (Math.random() < .35) hurtGunner(nearGunner(WALL.x1, GY - 60, 200), dd * .6) } if (e.cloak) e.cloak = 0 }
+      e.atkT -= dt; if (e.atkT <= 0) { e.atkT = d.rate; e.sw = 1; { const dd = d.dmg * (S.demo ? 0 : 1) * (1 + .04 * (S.wave - 1)); hitWall(dd, WALL.x1 + rand(-4, 2), GY - rand(.2, .7) * e.h); if (d.slam) { lavaSlam(e, dd) } else if (Math.random() < .35) hurtGunner(nearGunner(WALL.x1, GY - 60, 200), dd * .6) } if (e.cloak) e.cloak = 0 }
       break;
     case 'shoot':
       if (e.x > e.stopX + 30) { e.state = 'walk'; break }
@@ -138,16 +151,19 @@ function updateEnemy(e, dt) {
       break;
   }
   if (!d.fly) { e.bob = e.state === 'walk' ? -Math.abs(Math.sin(e.phase)) * e.h * .035 : 0 } else e.bob = 0;
-  if (d.fly && !d.boss && Math.random() < dt * 14) S.parts.push({ type: 'smoke', col: '#6a5a78', x: e.x + e.w * .4, y: e.y, vx: rand(20, 60), vy: rand(-10, 20), life: .3, max: .3, size: rand(3, 6), g: 0 });
+  if (d.fly && !d.boss && !d.clean && Math.random() < dt * 14) S.parts.push({ type: 'smoke', col: '#6a5a78', x: e.x + e.w * .4, y: e.y, vx: rand(20, 60), vy: rand(-10, 20), life: .3, max: .3, size: rand(3, 6), g: 0 });
   if (d.beh === 'suicide' && Math.random() < dt * 20) { S.parts.push({ type: 'spark', x: e.x + e.w * .1, y: e.topY + 4, vx: rand(-80, 80), vy: rand(-160, -40), life: .2, max: .25, size: 2, g: 300, col: '#ffd23f' }) }
   computeBody(e);
 }
 function smokePuff(x, y, col) { for (let i = 0; i < 8; i++)S.parts.push({ type: 'smoke', x: x + rand(-14, 14), y: y + rand(-14, 14), vx: rand(-40, 40), vy: rand(-50, 0), life: .6, max: .6, size: rand(8, 14), g: 0, col }) }
 function ramBlow(e) { e.dead = true; explode(e.core.x, e.core.y, 90, 40); hitWall(e.d.dmg * (1 + .04 * (S.wave - 1)) * (S.demo ? 0 : 1), WALL.x1, Math.min(GY - 40, e.y)); enemyDeath(e, { ix: 300 }); }
 function fireShell(e) {
+  if (e.d.shot === 'zap') { chainZap(e); return }
   if (e.d.volley && !e.inVolley) { e.inVolley = 1; for (let i = 0; i < e.d.volley; i++)fireShell(e); e.inVolley = 0; e.fireAt = e.t; return }
-  const m = e.muz || e.core, shell = e.d.shot === 'shell', tx = rand(WALL.x1 - 40, WALL.x1 - 4), ty = WALL.top + rand(-6, 80), g = shell ? 480 : 120; e.sw = 1;
-  const T = Math.abs(tx - m.x) / (shell ? rand(420, 500) : rand(700, 800));
+  const sp = e.d.shot === 'spear', glob = e.d.shot === 'acid' || e.tox;
+  const m = e.muz || e.core, shell = e.d.shot === 'shell' || glob, tx = rand(WALL.x1 - 40, WALL.x1 - 4), ty = WALL.top + rand(-6, 80), g = glob ? 520 : shell ? 480 : sp ? 60 : 120; e.sw = 1;
+  const T = Math.abs(tx - m.x) / (shell ? rand(420, 500) : sp ? rand(620, 700) : rand(700, 800));
+  if (sp || glob) { S.eproj.push({ kind: e.tox ? 'tox' : sp ? 'spear' : 'glob', x: m.x, y: m.y, vx: (tx - m.x) / T, vy: (ty - m.y) / T - .5 * g * T, g, dmg: (e.d.sdmg || e.d.dmg) * (1 + .05 * (S.wave - 1)) * (e.tox ? .5 : 1) }); SND.play(sp ? 'ice' : 'goo'); return }
   S.eproj.push({ kind: shell ? 'shell' : 'bolt', x: m.x, y: m.y, vx: (tx - m.x) / T, vy: (ty - m.y) / T - .5 * g * T, g, dmg: (e.d.sdmg || e.d.dmg) * (1 + .05 * (S.wave - 1)) });
   if (shell) for (let i = 0; i < 5; i++)S.parts.push({ type: 'smoke', x: m.x, y: m.y, vx: rand(-60, 10), vy: rand(-40, 10), life: .6, max: .6, size: rand(6, 10), g: 0 });
   S.parts.push({ type: 'flash', x: m.x, y: m.y, a: Math.atan2(ty - m.y, tx - m.x), life: .06, max: .06, size: shell ? 1.2 : .8, g: 0 }); SND.play(shell ? 'thud' : 'smg');
@@ -183,6 +199,9 @@ var RIG = {
   attack_drone: { k: 'jet', pts: [[.97, .42]] },
   bomber_drone: { k: 'jet', pts: [[.97, .33]] },
   hover_bike: { k: 'jet', pts: [[.9, .72]] },
+  magma_sentinel: { k: 'walker' },
+  storm_reaver: { k: 'wing', a: .3, b: .7, py: .4, amp: .2, fr: 5 },
+  bioplague_overlord: { k: 'quad', y: .6, amp: .16 },
 };
 // each rig part is pre-cut once into its own full-size canvas (no sub-rect sampling, so no seams)
 const partCache = {};
@@ -229,6 +248,7 @@ function drawEnemy(g, e) {
   const x0 = e.x - e.w / 2 - lunge + recoil, y0 = (d.fly ? e.y - e.h / 2 : e.y - e.h) + (e.bob || 0);
   if (!d.fly) { g.fillStyle = 'rgba(30,10,25,.3)'; g.beginPath(); g.ellipse(e.x, GY + 2, e.w * .42 * (1 - (e.bob || 0) / e.h), 5 * Math.sqrt(e.s), 0, 0, 7); g.fill() }
   else if (e.y > GY - 120) { g.fillStyle = 'rgba(30,10,25,.18)'; g.beginPath(); g.ellipse(e.x, GY + 2, e.w * .3, 4, 0, 0, 7); g.fill() }
+  if (d.late) drawLateUnder(g, e);
   const alpha = (e.cloak ? .16 + .06 * Math.sin(e.t * 20) : 1) * Math.min(1, (e.age || 0) * 4);
   if (R && R.aura && !e.cloak) {
     const r = Math.max(e.w, e.h) * .62, pu = .22 + .1 * Math.sin(e.t * 4), c = e.core, gr = g.createRadialGradient(c.x, c.y, 0, c.x, c.y, r);
@@ -257,6 +277,7 @@ function drawEnemy(g, e) {
     g.globalCompositeOperation = 'source-over'
   }
   g.restore();
+  if (d.late) drawLateOver(g, e);
   if (e.cloak) return;
   if (!d.boss && e.hp < e.maxHp) { const w = Math.max(34, Math.min(70, e.w * .6)), x = e.core.x - w / 2, y = e.topY - 8; g.fillStyle = 'rgba(10,5,15,.75)'; g.fillRect(x - 2, y - 2, w + 4, 8); g.fillStyle = e.hp / e.maxHp > .5 ? '#ff5a4f' : '#ff2d2d'; g.fillRect(x, y, w * Math.max(0, e.hp / e.maxHp), 4); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(x, y, w * Math.max(0, e.hp / e.maxHp), 1.5) }
   if (e.shield > 0 && e.shieldMax) { const w = 34, x = e.core.x - w / 2, y = e.topY - 14; g.fillStyle = '#cfe6ff'; g.fillRect(x, y, w * e.shield / e.shieldMax, 3) }
@@ -337,4 +358,79 @@ function killEnemy(e, o) {
   enemyDeath(e, o);
   if (e.d.beh === 'suicide') explode(e.core.x, e.core.y, 95, 60 * hpMul(Math.max(1, S.wave)));
   if (e.d.boss) { S.slow = 1.1; S.shake = 18; const st = S, cx = e.core.x, cy = e.core.y; for (let i = 0; i < 5; i++)setTimeout(() => { if (S === st) explodeFx(cx + rand(-80, 80), cy + rand(-80, 60), 70) }, i * 180); S.banner = { text: e.d.name.toUpperCase() + ' DOWN!', sub: '', t: 0, col: '#ffd35a' } }
+}
+
+// ---------- late villain abilities ----------
+const aliveGunners = () => S.slots.filter(s => s.w && !s.ko && !s.down);
+// jagged lightning path between two points (for the bolt particle)
+function zigzag(x1, y1, x2, y2, n, j) { const pts = [{ x: x1, y: y1 }]; for (let k = 1; k < n; k++) { const f = k / n; pts.push({ x: x1 + (x2 - x1) * f + rand(-j, j), y: y1 + (y2 - y1) * f + rand(-j, j) }) } pts.push({ x: x2, y: y2 }); return pts }
+function lateAbility(e, d, dt) {
+  const wm = 1 + .05 * (S.wave - 1);
+  // Eruption Wave: a lava wave rolls along the ground into the base
+  if (d.erupt && (e.state === 'walk' || e.state === 'attack') && e.x < W - 60) {
+    e.erT = (e.erT == null ? rand(2.5, 4) : e.erT) - dt;
+    if (e.erT <= 0) { e.erT = rand(6.5, 8.5); e.sw = 1; S.shake = Math.max(S.shake, 5); SND.play('thud');
+      S.eproj.push({ kind: 'lwave', x: e.x - e.w * .3, y: GY - 6, vx: -330, vy: 0, g: 0, dmg: d.dmg * .55 * wm });
+      for (let i = 0; i < 10; i++)S.parts.push({ type: 'fire', x: e.x + rand(-.3, .3) * e.w, y: GY - 4, vx: rand(-120, 60), vy: rand(-260, -90), life: rand(.3, .6), max: .6, size: rand(4, 8), g: 600 }) }
+  }
+  // Rift Teleport: blinks forward while walking
+  if (d.tele && e.state === 'walk' && e.x < W - 40) {
+    e.tpT = (e.tpT == null ? rand(2, 3.5) : e.tpT) - dt;
+    if (e.tpT <= 0) { e.tpT = rand(3.6, 5); const nx = Math.max((e.stopX || WALL.x1 + 220) - 10, e.x - rand(130, 180));
+      if (nx < e.x - 30) { for (const x of [e.x, nx]) S.parts.push({ type: 'ring', x, y: e.y, life: .45, max: .45, size: e.h * .55, g: 0, col: '200,120,255' }); smokePuff(e.core.x, e.core.y, '#6a3a9a'); e.x = nx; SND.play('grav') } }
+  }
+  // Shard Storm: once below half HP it bursts a fan of crystal spears
+  if (d.shards && !e.burst && e.hp < e.maxHp * .5) { e.burst = 1; for (let i = 0; i < 5; i++)fireShell(e); S.parts.push({ type: 'ring', x: e.core.x, y: e.core.y, life: .5, max: .5, size: e.h * .8, g: 0, col: '220,150,255' }) }
+  // Gale Dash: short bursts of speed while flying in
+  if (d.dash) { if (e.dashT > 0) { e.dashT -= dt; if (Math.random() < dt * 40) S.parts.push({ type: 'smoke', col: '#7fe0ff', x: e.x + e.w * .3, y: e.y + rand(-.2, .2) * e.h, vx: rand(80, 160), vy: rand(-10, 10), life: .25, max: .25, size: rand(3, 6), g: 0 }) }
+    else if (e.state === 'walk' && e.x < W - 40) { e.dashCD = (e.dashCD == null ? rand(1, 2) : e.dashCD) - dt; if (e.dashCD <= 0) { e.dashCD = rand(2.6, 3.6); e.dashT = .45; SND.play('saw') } } }
+  // Regeneration: heals when it has not been hit for a moment
+  if (d.regen) { e.hitT = (e.hitT || 0) + dt; if (e.hitT > 2.5 && e.hp < e.maxHp) { e.hp = Math.min(e.maxHp, e.hp + e.maxHp * .025 * dt); if (Math.random() < dt * 4) S.parts.push({ type: 'plus', x: e.core.x + rand(-.3, .3) * e.w, y: e.topY + 10, vx: 0, vy: -40, life: .8, max: .8, g: 0 }) } }
+  // Toxic Cloud: lobs a poison glob that lingers on the base
+  if (d.toxic && e.state === 'shoot') { e.txT = (e.txT == null ? rand(3, 5) : e.txT) - dt; if (e.txT <= 0) { e.txT = rand(7.5, 9.5); e.tox = 1; fireShell(e); e.tox = 0 } }
+}
+// Lava Slam: every melee hit also strikes the gunner nearest the front
+function lavaSlam(e, dd) {
+  S.shake = Math.max(S.shake, 6); hurtGunner(nearGunner(WALL.x1 - 40, GY - 80, 260), dd * .5);
+  for (let i = 0; i < 8; i++)S.parts.push({ type: 'fire', x: WALL.x1 + rand(-10, 10), y: GY - rand(10, 60), vx: rand(-160, 40), vy: rand(-240, -60), life: rand(.3, .5), max: .5, size: rand(4, 8), g: 700 })
+}
+// Chain Lightning: zaps a gunner, then jumps to a second one; with no gunners it hits the base. Every third zap is a Thunder Barrage.
+function chainZap(e) {
+  const d = e.d, m = e.muz || e.core, dmg = d.dmg * (1 + .05 * (S.wave - 1)); e.sw = 1; e.zaps = (e.zaps || 0) + 1;
+  const gs = aliveGunners().sort((a, b) => Math.hypot(a.x - m.x, a.y - m.y) - Math.hypot(b.x - m.x, b.y - m.y));
+  if (gs.length) {
+    let from = m; gs.slice(0, 2).forEach((s, i) => { const J = gunnerJ(s); S.parts.push({ type: 'bolt', pts: zigzag(from.x, from.y, J.head.x, J.head.y + 6, 7, 14), x: J.head.x, y: J.head.y, life: .22, max: .22, g: 0, col: '110,220,255' }); hurtGunner(s, dmg * (i ? .55 : 1)); from = { x: J.head.x, y: J.head.y + 6 } });
+    hitWall(dmg * .3, WALL.x1 - 6, WALL.top + 30);
+  } else { const tx = WALL.x1 - 8, ty = WALL.top + rand(10, 90); S.parts.push({ type: 'bolt', pts: zigzag(m.x, m.y, tx, ty, 7, 14), x: tx, y: ty, life: .22, max: .22, g: 0, col: '110,220,255' }); hitWall(dmg, tx, ty) }
+  SND.play('zap');
+  if (e.zaps % 3 === 0) { const st = S; for (let i = 0; i < 3; i++)setTimeout(() => { if (S !== st || S.mode !== 'play') return; const x = rand(WALL.x0 + 40, WALL.x1 - 10), y = WALL.top + rand(0, 120);
+    S.parts.push({ type: 'bolt', pts: zigzag(x + rand(-30, 30), -10, x, y, 9, 18), x, y, life: .3, max: .3, g: 0, col: '150,230,255' }); explodeFx(x, y, 30); hitWall(dmg * .6, x, y); hurtGunner(nearGunner(x, y, 90), dmg * .4); SND.play('zap') }, 350 + i * 260) }
+}
+// lingering poison clouds left by Toxic Cloud globs
+function updateClouds(dt) {
+  if (!S.clouds || !S.clouds.length) return;
+  for (const c of S.clouds) { c.t -= dt; c.tick -= dt; if (c.tick <= 0) { c.tick = .5; for (const s of aliveGunners()) if (Math.hypot(s.x - c.x, (s.y - 40) - c.y) < 120) hurtGunner(s, c.dmg) } }
+  S.clouds = S.clouds.filter(c => c.t > 0);
+}
+function drawClouds(g) {
+  if (!S.clouds) return;
+  for (const c of S.clouds) { const a = Math.min(1, c.t / .8) * Math.min(1, (4 - c.t) * 3); g.globalAlpha = .4 * a;
+    for (let k = 0; k < 6; k++) { const px = c.x + Math.cos(k * 1.7 + S.time * .6) * 55, py = c.y + Math.sin(k * 2.3 + S.time * .8) * 22; g.fillStyle = k % 2 ? '#7fc22a' : '#a8e23a'; g.beginPath(); g.arc(px, py, 26 + (k % 3) * 8, 0, 7); g.fill() } }
+  g.globalAlpha = 1;
+}
+// extra pieces drawn with the late villains: the Sentinel's lava pool, the Wraith's orbiting shards, the Reaver's crackle
+function drawLateUnder(g, e) {
+  if (!e.d.pool) return; const w = e.w * .5;
+  g.fillStyle = '#7a1a0e'; g.beginPath(); g.ellipse(e.x, GY + 1, w, 8, 0, 0, 7); g.fill();
+  g.fillStyle = '#ff6a1a'; g.beginPath(); g.ellipse(e.x, GY, w * .86, 5.5, 0, 0, 7); g.fill();
+  g.fillStyle = '#ffc04a'; g.beginPath(); g.ellipse(e.x - w * .15, GY - 1, w * .4, 2.2, 0, 0, 7); g.fill();
+}
+function drawLateOver(g, e) {
+  const d = e.d, c = e.core;
+  if (d.shards) { for (let k = 0; k < 3; k++) { const a = e.t * 1.6 + k * 2.09, px = c.x + Math.cos(a) * e.w * .55, py = c.y - e.h * .1 + Math.sin(a) * e.h * .2, s = 7 + k * 1.5;
+    g.fillStyle = '#b070ff'; g.beginPath(); g.moveTo(px, py - s * 1.6); g.lineTo(px + s * .55, py); g.lineTo(px, py + s * 1.1); g.lineTo(px - s * .55, py); g.closePath(); g.fill();
+    g.fillStyle = '#f2dcff'; g.beginPath(); g.moveTo(px, py - s * 1.3); g.lineTo(px + s * .2, py); g.lineTo(px, py + s * .3); g.closePath(); g.fill() } }
+  if (d.storm && Math.random() < .55) { g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(120,225,255,.8)'; g.lineWidth = 1.6; g.lineJoin = 'round';
+    for (let k = 0; k < 2; k++) { const a = rand(0, 6.28), r1 = e.w * rand(.1, .2), r2 = e.w * rand(.35, .5), p = zigzag(c.x + Math.cos(a) * r1, c.y + Math.sin(a) * r1 * .6, c.x + Math.cos(a) * r2, c.y + Math.sin(a) * r2 * .6, 4, 6);
+      g.beginPath(); g.moveTo(p[0].x, p[0].y); for (const q of p) g.lineTo(q.x, q.y); g.stroke() } g.restore() }
 }

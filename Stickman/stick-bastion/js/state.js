@@ -21,7 +21,7 @@ function freshState(demo,L){
   const hp=demo?400:Math.round(400*(1+.1*perk('wall')));
   return{mode:demo?'menu':'play',demo:!!demo,career:L||null,maxGunners:1,wave:L?L.off:0,coins:demo?0:(L?L.coins:150)+perk('chest')*40,kills:0,heads:0,wallMax:hp,wallHP:hp,wallLvl:0,
     slots,spikes:0,mines:[],strikeLvl:0,strikeCD:0,
-    enemies:[],bullets:[],eproj:[],parts:[],rags:[],floaters:[],coinfx:[],bombs:[],plane:null,
+    enemies:[],bullets:[],eproj:[],parts:[],rags:[],floaters:[],coinfx:[],bombs:[],clouds:[],plane:null,
     queue:[],spawnT:0,waveActive:false,waveTotal:1,breakT:demo?0:12,dyingT:0,speed:1,
     shake:0,time:0,slow:0,banner:null,wallHit:0,demoT:0,cracks:makeCracks(),popSlot:null};
 }

@@ -8,10 +8,15 @@ const MAPS={"industrial":{"name":"Industrial Fortress","icon":"⚙️","x1":760,
   "cyber":{"name":"Cyber Tech Base","icon":"💠","x1":760,"top":300,"slots":[[660,300],[560,185],[400,104],[310,150]],"th":{"sky":["#070a24","#24145a","#8a2c8e"],"far":"#2a1f5c","mid":"#1d1745","near":"#130f30","g1":"#ff3fd0","g2":"#1d1838","g3":"#0a0818","deco":"city","night":1},
   "w":736,"h":430,"ox":34},
   "desert":{"name":"Desert Outpost","icon":"🌵","x1":760,"top":296,"slots":[[705,296],[600,205],[495,158],[220,98]],"th":{"sky":["#58a6e8","#f3d9a8","#ffbe72"],"far":"#e8b779","mid":"#dc9a55","near":"#c67c3c","g1":"#f6cf8a","g2":"#d49650","g3":"#8a5226","deco":"cactus","sunX":760,"sunY":300,"sunR":46},
-  "w":743,"h":430,"ox":55}};
-const MAPIDS=['industrial','nature','cyber','desert'];
+  "w":743,"h":430,"ox":55},
+  // painted maps: the backdrop is a picture (bg) instead of the drawn sky; the base picture is 1.64x its size here for sharpness
+  "volcanic":{"name":"Volcanic Wastelands","icon":"","x1":694,"top":330,"slots":[[607,405],[455,310],[366,206],[125,136]],"bg":"assets/bases/bg_volcanic.webp","th":{"sky":["#3a1c3a","#b8402a","#ff8a3a"],"far":"#5a2a3a","mid":"#3a1e2a","near":"#2a1620","g1":"#ff7a2a","g2":"#3a2230","g3":"#1a0e14","night":1},
+  "w":696,"h":440,"ox":0},
+  "crystal":{"name":"Crystal Caverns","icon":"","x1":696,"top":330,"slots":[[607,405],[455,310],[366,206],[125,136]],"bg":"assets/bases/bg_crystal.webp","th":{"sky":["#0a0f3a","#1d2a7a","#3a4fb0"],"far":"#1a2060","mid":"#141a4a","near":"#0e1236","g1":"#b070ff","g2":"#1e1a40","g3":"#0a0a1e","night":1},
+  "w":698,"h":440,"ox":0}};
+const MAPIDS=['industrial','nature','cyber','desert','volcanic','crystal'];
 let MAP=null;
-for(const id of MAPIDS){const m=MAPS[id];m.id=id;m.src='assets/bases/'+id+'.webp';m.img=loadImg(m.src)}
+for(const id of MAPIDS){const m=MAPS[id];m.id=id;m.src='assets/bases/'+id+'.webp';m.img=loadImg(m.src);if(m.bg)m.bgImg=loadImg(m.bg)}
 const WEAPONS=[
   {id:'blaster',name:'Rapid Blaster',price:60,dmg:12,rate:2.6,spread:.03,speed:2000,pellets:1,pierce:1,recoil:4,shake:0,range:950,turn:6,headCh:.3,col:'#ffb020',bc:'255,170,50',snd:'pistol',desc:'Cheap and quick'},
   {id:'shock',name:'Shock Gun',price:110,dmg:26,rate:1.6,speed:1e6,hit:'chain',chain:4,range:820,recoil:5,shake:.5,turn:6,headCh:0,col:'#4fe3ff',snd:'zap',desc:'Lightning jumps between enemies'},
@@ -49,4 +54,4 @@ const GUNM={blaster: [353, 130, 50, 353, 90, 100, 96], plasma: [362, 137, 60, 36
 const GUNIMG={},GSP={};
 for(const id in GUNM){GUNIMG[id]=loadImg('assets/guns/'+id+'.webp');const [w,h,by,tx,gx,gy,len]=GUNM[id],k=len*.85/w,px=gx+40;
   GSP[id]={x0:-px*k,y0:-by*k,w:w*k,h:h*k,tip:(tx-px)*k,grip:[-40*k,(gy-by)*k]}}
-const ENEMY_SIZE={rifle_grunt: [119, 117], shield_brute: [153, 130], blade_raider: [163, 119], heavy_gunner: [183, 150], bomb_runner: [151, 140], mech_walker: [215, 150], spiked_beast: [181, 128], juggernaut: [279, 196], scout_drone: [177, 60], attack_drone: [212, 86], hover_bike: [164, 98], wing_raider: [276, 114], bomber_drone: [249, 119], sky_reaper: [327, 151], stealth_assassin: [89, 121], mind_controller: [116, 132], healer_support: [128, 155], turret_carrier: [222, 149], warlord_mech: [362, 203], void_dragon: [380, 220], goliath_mech: [1194, 600]};
+const ENEMY_SIZE={rifle_grunt: [119, 117], shield_brute: [153, 130], blade_raider: [163, 119], heavy_gunner: [183, 150], bomb_runner: [151, 140], mech_walker: [215, 150], spiked_beast: [181, 128], juggernaut: [279, 196], scout_drone: [177, 60], attack_drone: [212, 86], hover_bike: [164, 98], wing_raider: [276, 114], bomber_drone: [249, 119], sky_reaper: [327, 151], stealth_assassin: [89, 121], mind_controller: [116, 132], healer_support: [128, 155], turret_carrier: [222, 149], warlord_mech: [362, 203], void_dragon: [380, 220], goliath_mech: [1194, 600], magma_sentinel: [430, 307], crystal_wraith: [369, 365], storm_reaver: [416, 272], bioplague_overlord: [450, 344]};

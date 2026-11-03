@@ -160,7 +160,7 @@ $('mapPick').addEventListener('click',ev=>{const b=ev.target.closest('[data-map]
 renderMapPick();
 $('againBtn').onclick=()=>{SND.unlock();newGame(lastLevel)};
 $('retryBtn').onclick=()=>{SND.unlock();newGame(lastLevel)};
-$('nextBtn').onclick=()=>{SND.unlock();CAR.sel=Math.min(15,lastLevel.k);saveCar();newGame(LEVELS[CAR.sel])};
+$('nextBtn').onclick=()=>{SND.unlock();CAR.sel=Math.min(NLV-1,lastLevel.k);saveCar();newGame(LEVELS[CAR.sel])};
 $('mapBtn').onclick=toMenu;
 $('menuBtn').onclick=toMenu;$('quitBtn').onclick=toMenu;
 $('resumeBtn').onclick=resume;$('pauseBtn').onclick=()=>{S.mode==='paused'?resume():pause()};

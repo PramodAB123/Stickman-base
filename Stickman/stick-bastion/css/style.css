@@ -527,7 +527,7 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 .mapwrap{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab}
 .mapwrap::-webkit-scrollbar{display:none}
 .mapwrap.drag{cursor:grabbing}.mapwrap.drag .node{pointer-events:none}
-#mapIn{position:relative;height:100%;width:220%}
+#mapIn{position:relative;height:100%;width:330%}
 
 @container (max-width:760px){#nodes .node{font-size:.8em}#nodes .chlab,#nodes .fogseal{font-size:.85em}}
 @container (max-width:620px){#nodes .node{font-size:.68em}#nodes .chlab,#nodes .fogseal{font-size:.72em}}

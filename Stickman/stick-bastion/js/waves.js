@@ -3,7 +3,7 @@
 // which wave of this run we're on (1 = first): the first few start small and spaced out, then ramp up
 const waveIdx=()=>S.career?careerWave():S.wave;
 function buildWave(n){
-  const pool=Object.keys(UNLOCK).filter(k=>UNLOCK[k]<=n);
+  const pool=Object.keys(UNLOCK).filter(k=>UNLOCK[k]<=n).concat(Object.keys(LATE).filter(k=>S.career?S.career.ch>=LATE[k].ch:n>=LATE[k].sv));
   const wi=waveIdx(),ramp=wi===1?.5:wi===2?.7:wi===3?.85:1;
   let budget=(10+n*7.5+n*n*.45)*(n<5?1.4:n<10?1.3:1.1)*ramp;const q=[];
   const tw=pool.reduce((a,k)=>a+ET[k].w,0);
@@ -64,7 +64,7 @@ function update(dt){
   for(const e of S.enemies)updateEnemy(e,dt);
   updateWave(dt);
   updateGunners(dt);
-  updateBullets(dt);updateEproj(dt);updatePlane(dt);updateBombs(dt);updateRags(dt);
+  updateBullets(dt);updateEproj(dt);updateClouds(dt);updatePlane(dt);updateBombs(dt);updateRags(dt);
   S.enemies=S.enemies.filter(e=>!e.dead);
   for(const p of S.parts){p.life-=dt;p.vy+=(p.g||0)*dt;p.x+=(p.vx||0)*dt;p.y+=(p.vy||0)*dt;if(p.vr)p.rot+=p.vr*dt;
     const fl=p.floor!=null?p.floor:GY;if(p.g&&p.y>fl){p.y=fl;p.vy*=-.3;p.vx*=.6;if(p.vr)p.vr*=.5}
