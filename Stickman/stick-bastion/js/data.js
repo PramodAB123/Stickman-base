@@ -20,10 +20,10 @@ for(const id of MAPIDS){const m=MAPS[id];m.id=id;m.src='assets/bases/'+id+'.webp
 const WEAPONS=[
   {id:'blaster',name:'Rapid Blaster',price:60,dmg:12,rate:2.6,spread:.03,speed:2000,pellets:1,pierce:1,recoil:4,shake:0,range:950,turn:6,headCh:.3,col:'#ffb020',bc:'255,170,50',snd:'pistol',desc:'Cheap and quick'},
   {id:'shock',name:'Shock Gun',price:110,dmg:26,rate:1.6,speed:1e6,hit:'chain',chain:4,range:820,recoil:5,shake:.5,turn:6,headCh:0,col:'#4fe3ff',snd:'zap',desc:'Lightning jumps between enemies'},
-  {id:'flame',name:'Flame Thrower',price:160,dmg:6,rate:14,spread:.1,speed:760,pellets:1,pierce:3,life:.9,recoil:1.5,shake:0,range:540,turn:6,headCh:0,burn:12,col:'#ff6a2a',snd:'flame',desc:'Burns machines up close'},
+  {id:'flame',name:'Flame Thrower',price:160,dmg:14,rate:6,spread:.1,speed:560,pellets:1,pierce:3,life:1.1,recoil:1.5,shake:0,range:540,turn:6,headCh:0,burn:12,col:'#ff6a2a',snd:'flame',desc:'Burns machines up close'},
   {id:'frost',name:'Frost Ray',price:210,dmg:17,rate:4.6,spread:.025,speed:1800,pellets:1,pierce:1,recoil:3,shake:0,range:900,turn:6,headCh:.15,slow:.45,col:'#8fe8ff',bc:'140,230,255',snd:'ice',desc:'Freezes and slows enemies'},
   {id:'acid',name:'Acid Sprayer',price:270,dmg:36,rate:1.6,spread:.02,speed:1050,grav:70,pellets:1,pierce:1,radius:62,acid:14,recoil:5,shake:.5,range:820,turn:5,headCh:0,col:'#9cff3a',fx:'156,255,58',snd:'goo',desc:'Acid splash melts armor'},
-  {id:'laser',name:'Laser Beam',price:330,dmg:11,rate:7,speed:1e6,hit:'beam',range:1150,recoil:1,shake:0,turn:4.5,headCh:.1,col:'#c070ff',snd:'laser',desc:'Cuts every enemy in its line'},
+  {id:'laser',name:'Laser Beam',price:330,dmg:26,rate:3,speed:1e6,hit:'beam',range:1150,recoil:1,shake:0,turn:4.5,headCh:.1,col:'#c070ff',snd:'laser',desc:'Cuts every enemy in its line'},
   {id:'railgun',name:'Railgun',price:380,dmg:95,rate:.9,spread:.004,speed:3400,pellets:1,pierce:4,recoil:12,shake:1,range:2000,turn:4,headCh:.55,col:'#4fb8ff',snd:'sniper',desc:'Hunts the toughest enemy'},
   {id:'saw',name:'Saw Blaster',price:430,dmg:40,rate:1.3,spread:.01,speed:720,pellets:1,pierce:7,life:2,recoil:7,shake:.6,range:1000,turn:5,headCh:0,col:'#ff9a20',snd:'saw',desc:'Blades slice through lines'},
   {id:'plasma',name:'Plasma Cannon',price:490,dmg:75,rate:1.3,spread:.01,speed:1300,pellets:1,pierce:1,radius:80,recoil:10,shake:2,range:1500,turn:4,headCh:0,col:'#3ff0ff',fx:'80,240,255',snd:'plasma',desc:'Plasma blasts hit groups'},
