@@ -42,6 +42,8 @@ const chStars = c => CAR.stars.slice(c * 4, c * 4 + 4).reduce((a, b) => a + b, 0
 const chapterUnlocked = c => UNLOCK_ALL || c === 0 || (chapterUnlocked(c - 1) && chStars(c - 1) >= CH_NEED);
 // inside a chapter, each level needs a star on the one before it
 function unlocked(i) { if (UNLOCK_ALL || i === 0) return true; if (!chapterUnlocked(Math.floor(i / 4))) return false; return i % 4 === 0 || (unlocked(i - 1) && CAR.stars[i - 1] > 0) }
+// clear stars left on levels the player can't reach (e.g. saved while testing with UNLOCK_ALL)
+if (!UNLOCK_ALL) { let fixed = false; for (let i = 0; i < NLV; i++) if (CAR.stars[i] && !unlocked(i)) { CAR.stars[i] = 0; fixed = true } if (fixed) saveCar() }
 const OBJ = ['Complete the level', 'Keep base HP above 50%', 'No gunner knocked out'];
 const starTotal = () => CAR.stars.reduce((a, b) => a + b, 0);
 function nextLevel() { let last = 0; for (let i = 0; i < NLV; i++) { if (!unlocked(i)) break; last = i; if (!CAR.stars[i]) return i } return last }
