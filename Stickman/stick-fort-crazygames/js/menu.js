@@ -27,7 +27,7 @@ function showTab(t){
   $('hub').classList.toggle('see',t==='survival');
   $('hubTitle').textContent={upgrades:'UPGRADES',guns:'ARMORY',premium:'PREMIUM',career:'CAREER MODE',survival:'SURVIVAL'}[t];
   $('backBtn').classList.toggle('hidden',t==='career');
-  $('playBtn').innerHTML=t==='survival'?'SURVIVE <b>▶</b>':'PLAY <b>▶</b>';
+  $('playBtn').innerHTML=t==='survival'?'SURVIVE <b>▶︎</b>':'PLAY <b>▶︎</b>';
   if(t==='career'){drawMap();renderNodes();renderPanel();centerMap(CAR.sel)}
   if(t==='upgrades')renderUpg();
   if(t==='guns')renderGuns();
@@ -86,14 +86,14 @@ function renderPanel(){
   const ens=levelEnemies(L);
   $('lvlPanel').innerHTML=`<div class="lh"><small style="color:${C.col}">CHAPTER ${L.ch+1} · ${C.name.toUpperCase()}</small><h3>LEVEL ${L.k}${L.boss?' <em>BOSS</em>':''}</h3></div>
     <div class="prev" style="background:linear-gradient(${t.top[0]}55,${t.cliff[1]})"><img class="pb" alt="" src="${MAPS[C.id].src}"><div class="pen">${ens.slice(0,3).map(id=>`<img alt="" src="assets/enemies/${id}.webp" style="height:${ET[id].boss?2.9:Math.max(1.3,ET[id].h/30)}em">`).join('')}</div></div>
-    <div class="prow"><span>🌊 WAVES</span><b>${L.waves} waves</b></div>
-    <div class="prow"><span>💰 STARTING COINS</span><b>${L.coins+perk('chest')*40}</b></div>
+    <div class="prow"><span>${IC.waves} WAVES</span><b>${L.waves} waves</b></div>
+    <div class="prow"><span>${IC.bag} STARTING COINS</span><b>${L.coins+perk('chest')*40}</b></div>
     <div class="psec">ENEMY TYPES</div>
     <div class="pens">${ens.map(id=>`<div class="${ET[id].boss?'bs':''}" title="${ET[id].name}"><img alt="${ET[id].name}" src="assets/enemies/${id}.webp"></div>`).join('')}</div>
     <div class="psec">REWARDS</div>
     <div class="prw"><div><span class="crc">C</span>×${st?Math.round(L.reward*.35):L.reward}</div><div><span class="sti">★</span>+25 each</div></div>
     <div class="pobj">${OBJ.map((o,j)=>`<div class="${j<st?'on':''}"><i>★</i>${o}</div>`).join('')}</div>
-    ${lk?'<div class="plock">🔒 '+(i%4===0&&!chapterUnlocked(L.ch)?'Need '+CH_NEED+'★ in Chapter '+L.ch+' ('+chStars(L.ch-1)+'/12)':'Clear level '+i+' to unlock')+'</div>':''}`;
+    ${lk?'<div class="plock">'+IC.lock+' '+(i%4===0&&!chapterUnlocked(L.ch)?'Need '+CH_NEED+'★ in Chapter '+L.ch+' ('+chStars(L.ch-1)+'/12)':'Clear level '+i+' to unlock')+'</div>':''}`;
   $('playBtn').disabled=lk&&hubTab==='career';
 }
 // ---------- upgrades ----------

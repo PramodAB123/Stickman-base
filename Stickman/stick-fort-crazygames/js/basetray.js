@@ -2,8 +2,8 @@
 // Base upgrades (only Repair and Airstrike) as a bar of direct buttons along the bottom of the screen (replaces the BASE button and its popup)
 function baseItems(){
   const out=[],rc=Math.round((30+S.wave*6)/5)*5,missing=S.wallMax-S.wallHP;
-  out.push({ic:'🔧',sn:'REPAIR',d:'Repair wall: +35% base HP',col:'#5be27f',cost:missing>.5?rc:null,done:'FULL',act:()=>{S.wallHP=Math.min(S.wallMax,S.wallHP+S.wallMax*.35)}});
-  out.push({ic:'✈️',sn:'AIR',d:S.strikeLvl?'Airstrike: more bombs, faster recharge':'Airstrike: unlocks the STRIKE button',lv:S.strikeLvl,max:3,col:'#4fb4ff',cost:S.strikeLvl<3?(S.strikeLvl?350*S.strikeLvl+150:450):null,act:()=>{S.strikeLvl++;S.strikeCD=0}});
+  out.push({ic:IC.wrench,sn:'REPAIR',d:'Repair wall: +35% base HP',col:'#5be27f',cost:missing>.5?rc:null,done:'FULL',act:()=>{S.wallHP=Math.min(S.wallMax,S.wallHP+S.wallMax*.35)}});
+  out.push({ic:IC.plane,sn:'AIR',d:S.strikeLvl?'Airstrike: more bombs, faster recharge':'Airstrike: unlocks the STRIKE button',lv:S.strikeLvl,max:3,col:'#4fb4ff',cost:S.strikeLvl<3?(S.strikeLvl?350*S.strikeLvl+150:450):null,act:()=>{S.strikeLvl++;S.strikeCD=0}});
   return out;
 }
 // the bar lives inside the HUD, so it shows and hides with it
@@ -18,7 +18,7 @@ function renderBase(){
     if(it.cost!=null)c.dataset.cost=it.cost;
     const pips=mk('span','bp');for(let j=0;(it.max||0)>j;j++)pips.append(mk('i',it.lv>j?'on':''));
     const pr=mk('span','bpr');if(it.cost==null)pr.textContent=it.done||'MAX';else pr.append(mk('span','coin'),document.createTextNode(it.cost));
-    c.append(mk('span','bi',it.ic),mk('span','bn',it.sn),pips,pr);baseBar.append(c);
+    const bi=mk('span','bi');bi.innerHTML=it.ic;c.append(bi,mk('span','bn',it.sn),pips,pr);baseBar.append(c);
   });
   barState();
 }

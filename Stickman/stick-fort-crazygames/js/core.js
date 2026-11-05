@@ -10,8 +10,9 @@ const stage=$('stage'),cv=$('cv'),ctx=cv.getContext('2d');
 let SC=1,K=1,bg=null,rotateDismissed=false,S=null,ROT=false;
 function fit(){
   const vw=window.innerWidth,vh=window.innerHeight;
-  // phone held upright: lay the whole game on its side so it fills the screen (works even with rotation lock on)
-  ROT=vh>vw*1.05&&('ontouchstart' in window||navigator.maxTouchPoints>0);
+  // phone held upright: lay the whole game on its side so it fills the screen (works even with rotation lock on).
+  // Not on CrazyGames: the site and app handle orientation themselves.
+  ROT=CG.env!=='crazygames'&&vh>vw*1.05&&('ontouchstart' in window||navigator.maxTouchPoints>0);
   const aw=ROT?vh:vw,ah=ROT?vw:vh;
   SC=Math.min(aw/W,ah/H);
   const w=Math.floor(W*SC),h=Math.floor(H*SC);
@@ -29,7 +30,8 @@ window.addEventListener('resize',fit);
 window.addEventListener('orientationchange',()=>setTimeout(fit,200));
 $('rotOk').onclick=()=>{rotateDismissed=true;$('rotate').classList.remove('show')};
 
-const store={get(k,d){try{const v=localStorage.getItem('stickbastion.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('stickbastion.'+k,JSON.stringify(v))}catch(e){}}};
+// saves: CrazyGames data module when available (synced to the player's account), else localStorage (see cg.js)
+const store={get(k,d){try{const v=CG.getItem('stickbastion.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{CG.setItem('stickbastion.'+k,JSON.stringify(v))}catch(e){}}};
 
 const INK='#170e1f';
 function shade(hex){const n=parseInt(hex.slice(1),16),r=(n>>16)*.6|0,g=((n>>8)&255)*.6|0,b=(n&255)*.6|0;return`rgb(${r},${g},${b})`}

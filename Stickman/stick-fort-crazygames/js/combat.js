@@ -2,7 +2,7 @@
 // Bullets, hits, explosions, effects, airstrike
 function hurtGunner(s,dmg){
   if(!s||!s.w||s.down||s.ko||dmg<=0||S.mode!=='play')return;
-  s.hp-=dmg;s.hurt=.25;
+  dmg*=S.career&&S.career.edmg||1;s.hp-=dmg;s.hurt=.25;
   if(s.hp<=0){s.hp=0;s.ko=true;S.kos=(S.kos||0)+1;s.tgt=null;s.boost=0;floater(s.x,s.y-s.crate-90,'KNOCKED OUT!','#ff6b5b',.9);SND.play('thud');explodeFx(s.x,s.y-s.crate-40,30)}
 }
 function nearGunner(x,y,r){let best=null,bd=r;for(const s of S.slots){if(!s.w||s.ko)continue;const d=Math.hypot(s.x-x,(s.y-s.crate-40)-y);if(d<bd){bd=d;best=s}}return best}
@@ -10,7 +10,7 @@ function hitWall(dmg,x,y){
   for(let i=0;i<6;i++)S.parts.push({type:'chip',x,y,vx:rand(20,180),vy:rand(-220,-40),life:rand(.4,.8),max:.8,size:rand(2,4),g:900,col:'#6e5a50'});
   S.parts.push({type:'smoke',x,y,vx:rand(10,40),vy:-20,life:.6,max:.6,size:rand(10,16),g:0});
   if(dmg<=0||S.mode!=='play')return;
-  S.wallHP-=dmg;S.wallHit=.25;S.shake=Math.max(S.shake,3);SND.play('thud');
+  dmg*=S.career&&S.career.edmg||1;S.wallHP-=dmg;S.wallHit=.25;S.shake=Math.max(S.shake,3);SND.play('thud');
   if(S.wallHP>0&&S.wallHP<S.wallMax*.3&&!S.lowWarn){S.lowWarn=1;SND.play('alarm');floater(W/2,190,'BASE CRITICAL! REPAIR!','#ff5a4f',1.3)}
   if(S.wallHP>=S.wallMax*.45)S.lowWarn=0;
   if(S.wallHP<=0){S.wallHP=0;startDying()}

@@ -2,10 +2,10 @@
 // Sound effects (synthesised, no audio files)
 const SND={ctx:null,on:store.get('snd',true),noise:null,last:{},master:null,
   unlock(){
-    if(this.ctx){if(this.ctx.state==='suspended')this.ctx.resume();return}
+    if(this.ctx){if(this.ctx.state==='suspended'&&!CG.hush())this.ctx.resume();return}
     try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
       this.ctx=new AC();const len=this.ctx.sampleRate;const b=this.ctx.createBuffer(1,len,this.ctx.sampleRate);const d=b.getChannelData(0);
-      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;this.noise=b;this.master=this.ctx.createGain();this.master.gain.value=.4;this.master.connect(this.ctx.destination);
+      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;this.noise=b;this.master=this.ctx.createGain();this.master.gain.value=.4;this.master.connect(this.ctx.destination);CG.audio();
     }catch(e){this.ctx=null}
   },
   nz(dur,freq,q,vol,type,when){const c=this.ctx,t=c.currentTime+(when||0);const s=c.createBufferSource();s.buffer=this.noise;const f=c.createBiquadFilter();f.type=type||'lowpass';f.frequency.value=freq;f.Q.value=q;const g=c.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random()*.4);s.stop(t+dur+.05)},

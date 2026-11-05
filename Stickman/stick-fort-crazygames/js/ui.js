@@ -72,14 +72,14 @@ function renderSlotPop(mode){
     const r0=x=>String(Math.round(x)),r1=x=>x<3?x.toFixed(2):x.toFixed(1);
     p.innerHTML=`<button class="x gx" data-act="close" aria-label="Close">✕</button>
       <div class="ghead"><img alt="" src="${gunIcon(w.id)}"><div><b>${w.name}</b><span>${s.name}</span></div><span class="lvb">LV ${lv+1}</span></div>
-      ${max?'<button class="upbig" disabled data-lock="1">★ MAX LEVEL</button>':`<button class="upbig" data-act="up" data-cost="${c}"><span class="ua">⬆ UPGRADE</span><span class="uc"><span class="coin"></span> ${c}</span></button>`}
+      ${max?'<button class="upbig" disabled data-lock="1">★ MAX LEVEL</button>':`<button class="upbig" data-act="up" data-cost="${c}"><span class="ua">▲ UPGRADE</span><span class="uc"><span class="coin"></span> ${c}</span></button>`}
       <div class="gstats">${bar('DAMAGE',wDmg(w,lv),wDmg(w,lv+1),wDmg(w,MAXLV),r0)}${bar('FIRE RATE',wRate(w,lv),wRate(w,lv+1),wRate(w,MAXLV),r1)}${bar('HEALTH',s.maxHp,gHP(lv+1),gHP(MAXLV),r0)}</div>
       <div class="gfix">
         <div class="rp"><div class="rpl"><small>REPAIR</small><b id="gpHpT"></b></div><div class="rpb"><i id="gpHp"></i></div></div>
-        <button class="tool" id="gpFix" data-act="fix" aria-label="Repair"><span class="ti">🔧</span><span id="gpFixC"></span></button>
-        <button class="tool boost" id="gpBoost" data-act="boost" aria-label="Boost"><span class="ti">⚡<small>BOOST</small></span><span id="gpBoostC"></span></button>
+        <button class="tool" id="gpFix" data-act="fix" aria-label="Repair"><span class="ti">${IC.wrench}</span><span id="gpFixC"></span></button>
+        <button class="tool boost" id="gpBoost" data-act="boost" aria-label="Boost"><span class="ti">${IC.bolt}<small>BOOST</small></span><span id="gpBoostC"></span></button>
       </div>
-      <div class="gmore"><button data-act="swap">🔁 Change gun</button>${canSell?`<button data-act="sell">💰 Sell +${Math.round(s.invested*.6)}</button>`:''}</div>`;
+      <div class="gmore"><button data-act="swap">${IC.swap} Change gun</button>${canSell?`<button data-act="sell">${IC.bag} Sell +${Math.round(s.invested*.6)}</button>`:''}</div>`;
     p.classList.add('gpop');refreshGunPop(true);
   }
   if(!p.classList.contains('hidden'))placeSlotPop();
@@ -107,18 +107,18 @@ $('slotPop').addEventListener('click',ev=>{
 
 function baseItems(){
   const out=[],rc=Math.round((30+S.wave*6)/5)*5,missing=S.wallMax-S.wallHP;
-  out.push({ic:'🔧',n:'Repair wall',d:'Restore 35% of max HP',cost:missing>.5?rc:null,done:'FULL',act:()=>{S.wallHP=Math.min(S.wallMax,S.wallHP+S.wallMax*.35)}});
-  out.push({ic:'🧱',n:'Reinforce wall'+(S.wallLvl?' · Lv '+S.wallLvl:''),d:'+150 max HP (heals 150)',cost:S.wallLvl<6?180*(S.wallLvl+1):null,act:()=>{S.wallLvl++;S.wallMax+=150;S.wallHP+=150}});
-  out.push({ic:'🪵',n:'Spike trap'+(S.spikes?' · Lv '+S.spikes:''),d:'Slows and hurts attackers at the wall',cost:S.spikes<3?[220,420,700][S.spikes]:null,act:()=>{S.spikes++}});
+  out.push({ic:IC.wrench,n:'Repair wall',d:'Restore 35% of max HP',cost:missing>.5?rc:null,done:'FULL',act:()=>{S.wallHP=Math.min(S.wallMax,S.wallHP+S.wallMax*.35)}});
+  out.push({ic:IC.bricks,n:'Reinforce wall'+(S.wallLvl?' · Lv '+S.wallLvl:''),d:'+150 max HP (heals 150)',cost:S.wallLvl<6?180*(S.wallLvl+1):null,act:()=>{S.wallLvl++;S.wallMax+=150;S.wallHP+=150}});
+  out.push({ic:IC.spikes,n:'Spike trap'+(S.spikes?' · Lv '+S.spikes:''),d:'Slows and hurts attackers at the wall',cost:S.spikes<3?[220,420,700][S.spikes]:null,act:()=>{S.spikes++}});
   const live=S.mines.filter(m=>!m.used).length;
-  out.push({ic:'💣',n:'Land mines ×3',d:live+' / 9 placed · blow up walkers',cost:live<=6?150:null,done:'FULL',act:()=>{for(let i=0;i<3;i++)S.mines.push({x:rand(440,1080),used:false})}});
-  out.push({ic:'✈',n:'Airstrike'+(S.strikeLvl?' · Lv '+S.strikeLvl:''),d:S.strikeLvl?'More bombs, faster recharge':'Unlocks the STRIKE button',cost:S.strikeLvl<3?(S.strikeLvl?350*S.strikeLvl+150:450):null,act:()=>{S.strikeLvl++;S.strikeCD=0}});
+  out.push({ic:IC.mine,n:'Land mines ×3',d:live+' / 9 placed · blow up walkers',cost:live<=6?150:null,done:'FULL',act:()=>{for(let i=0;i<3;i++)S.mines.push({x:rand(440,1080),used:false})}});
+  out.push({ic:IC.plane,n:'Airstrike'+(S.strikeLvl?' · Lv '+S.strikeLvl:''),d:S.strikeLvl?'More bombs, faster recharge':'Unlocks the STRIKE button',cost:S.strikeLvl<3?(S.strikeLvl?350*S.strikeLvl+150:450):null,act:()=>{S.strikeLvl++;S.strikeCD=0}});
   return out;
 }
 let baseActs=[];
 function renderBase(){
   const items=baseItems();baseActs=items.map(i=>i.act);
-  $('basePop').innerHTML=`<div class="ph"><h4>🏰 Base upgrades<span class="sub2">Strengthen your fortress</span></h4><button class="x" data-act="close" aria-label="Close">✕</button></div>`+
+  $('basePop').innerHTML=`<div class="ph"><h4>${IC.castle} Base upgrades<span class="sub2">Strengthen your fortress</span></h4><button class="x" data-act="close" aria-label="Close">✕</button></div>`+
     items.map((it,i)=>`<div class="brow"><div class="ic">${it.ic}</div><div class="t"><b>${it.n}</b><span>${it.d}</span></div>${it.cost==null?`<button class="act" disabled>${it.done||'MAX'}</button>`:`<button class="act" data-i="${i}" data-cost="${it.cost}"><span class="coin"></span> ${it.cost}</button>`}</div>`).join('');
   hudUpdate();
 }
@@ -150,17 +150,20 @@ function newGame(L){
 }
 function toMenu(){tutEnd();if(lastLevel)applyMap(lastLevel.map);S=freshState(true);hudCacheReset();showScreen('hub');hudHide();showTab(lastLevel?'career':hubTab);updateBest()}
 function hudCacheReset(){for(const k in hudCache)delete hudCache[k]}
-function updateBest(){const b=store.get('best',0);$('bestTxt').textContent=b?'🏆 Best: '+b+' wave'+(b===1?'':'s')+' survived':'No record yet'}
+function updateBest(){const b=store.get('best',0);$('bestTxt').innerHTML=b?IC.trophy+' Best: '+b+' wave'+(b===1?'':'s')+' survived':'No record yet'}
 function pause(){if(S.mode!=='play')return;S.mode='paused';showScreen('pause')}
 function resume(){if(S.mode!=='paused')return;S.mode='play';showScreen(null);last=performance.now()}
-function sndLabel(){$('sndBtn1').textContent=SND.on?'🔊':'🔇';$('sndBtn2').textContent='🔊 Sound: '+(SND.on?'On':'Off')}
+function sndLabel(){$('sndBtn1').innerHTML=SND.on?IC.snd:IC.sndOff;$('sndBtn2').innerHTML=(SND.on?IC.snd:IC.sndOff)+' Sound: '+(SND.on?'On':'Off')}
 function toggleSnd(){SND.on=!SND.on;store.set('snd',SND.on);SND.unlock();sndLabel()}
-function renderMapPick(){$('mapPick').innerHTML=MAPIDS.map(id=>`<button class="mapc${MAP.id===id?' on':''}" data-map="${id}"><img alt="" src="${MAPS[id].src}"><span>${MAPS[id].icon} ${MAPS[id].name}</span></button>`).join('')}
+function renderMapPick(){$('mapPick').innerHTML=MAPIDS.map(id=>`<button class="mapc${MAP.id===id?' on':''}" data-map="${id}"><img alt="" src="${MAPS[id].src}"><span>${MAPS[id].name}</span></button>`).join('')}
 $('mapPick').addEventListener('click',ev=>{const b=ev.target.closest('[data-map]');if(!b)return;SND.unlock();SND.play('click');store.set('map',b.dataset.map);applyMap(b.dataset.map);S=freshState(true);renderMapPick()});
 renderMapPick();
-$('againBtn').onclick=()=>{SND.unlock();newGame(lastLevel)};
-$('retryBtn').onclick=()=>{SND.unlock();newGame(lastLevel)};
-$('nextBtn').onclick=()=>{SND.unlock();CAR.sel=Math.min(NLV-1,lastLevel.k);saveCar();newGame(LEVELS[CAR.sel])};
+// level transitions: a CrazyGames midgame ad may play first (the SDK limits how often)
+$('againBtn').onclick=()=>{SND.unlock();CG.midgame(()=>newGame(lastLevel))};
+$('retryBtn').onclick=()=>{SND.unlock();CG.midgame(()=>newGame(lastLevel))};
+$('nextBtn').onclick=()=>{SND.unlock();CAR.sel=Math.min(NLV-1,lastLevel.k);saveCar();CG.midgame(()=>newGame(LEVELS[CAR.sel]))};
+$('dblBtn').onclick=()=>{SND.unlock();CG.watchReward()};
+$('mapBtn').addEventListener('click',()=>{CG.rewardTaken=false});
 $('mapBtn').onclick=toMenu;
 $('menuBtn').onclick=toMenu;$('quitBtn').onclick=toMenu;
 $('resumeBtn').onclick=resume;$('pauseBtn').onclick=()=>{S.mode==='paused'?resume():pause()};
@@ -183,10 +186,12 @@ cv.addEventListener('pointerdown',e=>{
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&(S.popSlot!=null||!$('basePop').classList.contains('hidden'))){closePops();return}
-  if(e.key==='Escape'||e.key==='p'||e.key==='P'){S.mode==='paused'?resume():pause();return}
+  // P pauses (Escape is left alone: on CrazyGames it exits fullscreen)
+  if(CG.busy)return;
+  if(e.key==='p'||e.key==='P'){S.mode==='paused'?resume():pause();return}
   if(S.mode!=='play')return;
   if(e.code==='Space'){e.preventDefault();callNow()}
   else if(e.key==='f'||e.key==='F')callStrike();
   else if(e.key>='1'&&e.key<='4')openSlot(+e.key-1);
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(SND.ctx&&SND.ctx.state==='running')SND.ctx.suspend()}else if(SND.ctx&&SND.ctx.state==='suspended')SND.ctx.resume()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(SND.ctx&&SND.ctx.state==='running')SND.ctx.suspend()}else if(SND.ctx&&SND.ctx.state==='suspended'&&!CG.hush())SND.ctx.resume()});

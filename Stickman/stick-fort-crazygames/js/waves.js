@@ -20,7 +20,7 @@ function startWave(){
   S.mines=S.mines.filter(m=>!m.used);
   const C=S.career,boss=C?careerBossWave():S.wave%5===0,bn=C?C.boss:bossFor(S.wave);
   const last=C&&careerWave()===C.waves;
-  S.banner={text:C?(last?'FINAL WAVE':'WAVE '+careerWave()+' / '+C.waves):'WAVE '+S.wave,sub:boss?'⚠ '+ET[bn].name.toUpperCase()+' APPROACHES ⚠':'',t:0,col:boss||last?'#ff6b5b':'#ffd35a'};
+  S.banner={text:C?(last?'FINAL WAVE':'WAVE '+careerWave()+' / '+C.waves):'WAVE '+S.wave,sub:boss?ET[bn].name.toUpperCase()+' APPROACHES!':'',t:0,col:boss||last?'#ff6b5b':'#ffd35a'};
   SND.play('wave');
 }
 function callNow(){

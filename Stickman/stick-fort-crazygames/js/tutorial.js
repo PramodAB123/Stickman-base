@@ -3,7 +3,8 @@
 (function(){const old=document.getElementById('tut');if(old)old.remove();
   const mk=(tag,id,txt)=>{const e=document.createElement(tag);if(id)e.id=id;if(txt)e.textContent=txt;return e};
   const t=mk('div','tut');t.className='hidden';
-  t.append(mk('div','tutRing'),mk('div','tutHand','👆'),mk('div','tutCap'),mk('button','tutSkip','SKIP TUTORIAL'));
+  t.append(mk('div','tutRing'),mk('div','tutHand'),mk('div','tutCap'),mk('button','tutSkip','SKIP TUTORIAL'));
+  t.querySelector('#tutHand').innerHTML=IC.pointer;
   const bp=document.getElementById('basePop');bp.parentNode.insertBefore(t,bp.nextSibling)})();
 const TUT={on:false,i:0,slot:1,t0:0};
 const TSTEPS=[

@@ -317,7 +317,7 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 .bq{font-size:inherit;width:6.1em;padding:.4em .3em .38em;border-radius:.85em;border:1px solid color-mix(in srgb,var(--bc) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--bc) 22%,rgba(20,30,62,.95)),rgba(14,20,44,.95));display:flex;flex-direction:column;align-items:center;gap:.12em;cursor:pointer;color:#fff;transition:transform .12s,filter .2s;position:relative}
 .bq:hover{transform:translateY(-.15em)}
 .bq:active{transform:scale(.94)}
-.bq .bi{font-size:1.9em;line-height:1.05;filter:drop-shadow(0 0 .3em color-mix(in srgb,var(--bc) 70%,transparent))}
+.bq .bi{font-size:1.9em;line-height:1.05}
 .bq .bn{font-size:.72em;font-weight:900;letter-spacing:.08em}
 .bq .bp{display:flex;gap:.15em;height:.34em;margin:.05em 0 .1em}
 .bq .bp i{width:.65em;height:.32em;border-radius:.15em;background:rgba(255,255,255,.18)}
@@ -363,17 +363,17 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 /* tutorial caption + skip */
 #tutCap{top:17%;padding:.35em .9em .35em 2.4em;font:italic 900 1.75em/1.15 var(--hf)!important;letter-spacing:.01em;-webkit-text-stroke:0!important;text-shadow:0 .05em 0 #000;
   background:linear-gradient(90deg,rgba(12,20,48,.96),rgba(30,46,92,.96));border:2px solid var(--cy,#3aa8ff);border-radius:.5em;box-shadow:0 0 .8em rgba(58,168,255,.5)}
-#tutCap::before{content:"🎯";position:absolute;left:.45em;top:50%;transform:translateY(-50%);font-size:.95em;font-style:normal}
+#tutCap::before{content:"";width:1em;height:1em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='%23ffd23a'/%3E%3Ccircle cx='12' cy='12' r='6.5' fill='%230e1634'/%3E%3Ccircle cx='12' cy='12' r='3.6' fill='%23ffd23a'/%3E%3C/svg%3E") center/contain no-repeat;position:absolute;left:.45em;top:50%;transform:translateY(-50%);font-size:.95em;font-style:normal}
 #tutCap em{color:#ffd23a;font-style:inherit}
 #tutCap.win{padding-left:.9em;font-size:2.2em!important}
 #tutCap.win::before{content:none}
 #tutSkip{top:5.4em;right:1.2em;font:italic 800 .95em/1 "Barlow Condensed","Arial Narrow",Impact,sans-serif;letter-spacing:.04em;padding:.4em 1em;border-radius:.4em;transform:skewX(-14deg);background:linear-gradient(#1c2c5a,#0c1430);border:2px solid #3aa8ff;box-shadow:0 0 .6em rgba(58,168,255,.5)}
-#tutSkip::before{content:"⏭ ";color:#fff}
+#tutSkip::before{content:none}
 /* next wave + call now */
 #hud #breakBar{right:6.6em;bottom:.7em;gap:.5em;padding:0;background:none;border:0}
 #breakBar .nw{display:flex;align-items:center;gap:.45em;padding:.3em 1em .3em .8em;background:linear-gradient(var(--nv1),var(--nv2));border:2px solid var(--cy);border-radius:.45em;transform:skewX(-14deg);box-shadow:0 0 .7em rgba(58,168,255,.5)}
 #breakBar .nw>*{transform:skewX(14deg)}
-#breakBar .clk{font-size:1.5em;filter:sepia(1) saturate(4) hue-rotate(5deg)}
+#breakBar .clk{font-size:1.5em}
 #breakBar .nwt{display:flex;flex-direction:column;line-height:1;font:italic 800 1em var(--hf)}
 #breakBar .nwt small{font-size:.85em;color:#fff;letter-spacing:.03em}
 #breakBar .nwt b{color:var(--gd);font-size:1.6em}
@@ -559,3 +559,61 @@ h1.title{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-siz
 .pbuy{padding:.4em;font-size:.85em;background:linear-gradient(#ffe36a,#f0a417);color:#4a2800}
 .pbuy .crc{background:#6a3a00;color:#ffd34d}
 @container (max-width:760px){.pguns{gap:.4em}.part{height:4em}.part img{max-height:3.3em}.pd{display:none}.phead p{display:none}.pdc small{display:none}.ptag{display:none}}
+/* CrazyGames build: rewarded "double credits" button + ad loading blocker */
+.btn.dbl{display:inline-flex;align-items:center;gap:.45em;font-size:.95em;padding:.55em 1.1em;background:var(--navy,#14204a);color:#ffd23a;border:2px solid #ffd23a;box-shadow:0 .2em 0 #0a1028}
+.btn.dbl .vi{width:1.3em;height:1.3em;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.btn.dbl b{color:#fff}
+.btn.dbl:disabled{opacity:.6;cursor:default}
+.dblnote{margin:.3em 0;font-weight:800;color:#ffd23a}
+#adWait{position:fixed;inset:0;z-index:99;background:rgba(8,10,24,.72);display:flex;align-items:center;justify-content:center}
+#adWait .adbox{display:flex;align-items:center;gap:.7em;padding:.8em 1.4em;border-radius:.6em;border:2px solid #3d6fb0;background:#0e1634;color:#fff;font:italic 900 18px "Barlow Condensed",system-ui,sans-serif;letter-spacing:.06em}
+#adWait .adbox i{width:18px;height:18px;border-radius:50%;border:3px solid #3d6fb0;border-top-color:#ffd23a;animation:adspin .8s linear infinite}
+@keyframes adspin{to{transform:rotate(360deg)}}
+
+/* flat SVG icons (js/icons.js) replace emoji */
+svg.ic{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none}
+#tutHand svg.ic{width:1em;height:1em;display:block}
+
+/* readability floor: no text smaller than 9px, even in the smallest CrazyGames frame (800x450) */
+#stage .ghead div>span{font-size:max(0.68em,9px)}
+#stage div.ghead>span.lvb{font-size:max(0.78em,9px)}
+#stage div.gs>div.gl{font-size:max(0.74em,9px)}
+#stage div.gl>b{font-size:max(1em,9px)}
+#stage div.gl>em{font-size:max(1em,9px)}
+#stage div.rpl>small{font-size:max(0.833em,9px)}
+#stage div.rpl>#gpHpT{font-size:max(1em,9px)}
+#stage #gpFix>#gpFixC{font-size:max(1em,9px)}
+#stage span.ti>small{font-size:max(0.5em,9px)}
+#stage #gpBoost>#gpBoostC{font-size:max(1em,9px)}
+#stage div.gmore>button{font-size:max(0.72em,9px)}
+#stage h4>span.sub2{font-size:max(0.75em,9px)}
+#stage button.wopt>span.s{font-size:max(0.75em,9px)}
+#stage div.mnote>small{font-size:max(0.85em,9px)}
+#stage div.rb>small{font-size:max(0.66em,9px)}
+#stage span.cst>i{font-size:max(0.8em,9px)}
+#stage div.fogseal>small{font-size:max(0.78em,9px)}
+#stage span.cbar>em{font-size:max(0.8em,9px)}
+#stage button.node.lock.boss>span.btag{font-size:max(0.7em,9px)}
+#stage div.lh>small{font-size:max(0.68em,9px)}
+#stage div.prow>span{font-size:max(0.85em,9px)}
+#stage #lvlPanel>div.psec{font-size:max(0.68em,9px)}
+#stage .prw span.crc{font-size:max(0.85em,9px)}
+#stage div.pobj>div{font-size:max(0.78em,9px)}
+#stage div.ucard>span{font-size:max(0.78em,9px)}
+#stage button.act>span.crc{font-size:max(0.78em,9px)}
+#stage div.gcard>span{font-size:max(0.7em,9px)}
+#stage div.gbar>small{font-size:max(0.833em,9px)}
+#stage div.gcard>em{font-size:max(0.78em,9px)}
+#stage .phead p{font-size:max(0.75em,9px)}
+#stage div.pnm>span.ptag{font-size:max(0.6em,9px)}
+#stage div.pcard>span.pd{font-size:max(0.7em,9px)}
+#stage div.pst>small{font-size:max(0.6em,9px)}
+#stage div.pft>span.pdc{font-size:max(0.72em,9px)}
+#stage span.pdc>small{font-size:max(0.833em,9px)}
+#stage button.act.pbuy>span.crc{font-size:max(0.85em,9px)}
+#stage button.mapc.on>span{font-size:max(1em,9px)}
+#stage button.mapc>span{font-size:max(1em,9px)}
+#stage div.mt>small{font-size:max(0.72em,9px)}
+#stage button.btn.small>span.crc{font-size:max(0.85em,9px)}
+#hpBox .hpIc svg.ic{width:1.6em;height:1.6em}
+.hb svg.ic{width:1.25em;height:1.25em}
