@@ -136,7 +136,7 @@ function metaNote(where) {
   n.innerHTML = open.length ? '<small>DAILY MISSIONS</small>' + open.map(m => `<div><span>${mDef(m.id).t(m.goal)}</span><b class="${m.p >= m.goal ? 'ok' : ''}">${m.p >= m.goal ? 'READY ✓' : m.p + '/' + m.goal}</b></div>`).join('') : '<small>ALL DAILY MISSIONS DONE. NEW ONES TOMORROW.</small>';
 }
 
-// first visit of the day: pop the daily reward open on the menu
+// first visit of the day: pop the daily reward open on the menu (not for brand-new players, who should go straight to level 1)
 rollMissions(); metaDots();
-setTimeout(() => { if (dailyState().ready && !$('hub').classList.contains('hidden') && (typeof TUT === 'undefined' || !TUT.on)) openMeta('daily') }, 900);
+setTimeout(() => { if (CAR.stars.some(v => v > 0) && dailyState().ready && !$('hub').classList.contains('hidden') && (typeof TUT === 'undefined' || !TUT.on)) openMeta('daily') }, 900);
 { const _ng = newGame; newGame = function () { metaPop.classList.add('hidden'); return _ng.apply(this, arguments) } }

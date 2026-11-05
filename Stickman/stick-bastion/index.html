@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="css/style.css">
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  // Vercel analytics only on your own site; game portals (CrazyGames etc.) run the game in an iframe where this path does not exist
+  if (window.top === window.self) { var vs = document.createElement('script'); vs.defer = true; vs.src = '/_vercel/insights/script.js'; document.head.appendChild(vs); }
 </script>
-<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div id="stage">

@@ -4,7 +4,7 @@
 const ET = {
   rifle_grunt: { name: 'Rifle Grunt', h: 64, hp: 84, spd: 62, dmg: 9, rate: 1.5, coin: 6, cost: 1, w: 3, beh: 'shoot', crit: [.5, .15], muz: [.03, .6], shot: 'bullet', stopR: [160, 300] },
   blade_raider: { name: 'Blade Raider', h: 58, hp: 22, spd: 125, dmg: 6, rate: .55, coin: 7, cost: 1.1, w: 2, beh: 'melee', crit: [.37, .12] },
-  heavy_gunner: { name: 'Heavy Gunner', h: 74, hp: 70, spd: 46, dmg: 12, rate: 2.6, coin: 15, cost: 2.6, w: 1.2, beh: 'shoot', crit: [.5, .12], muz: [.03, .68], shot: 'bullet' },
+  heavy_gunner: { name: 'Heavy Gunner', h: 81, hp: 70, spd: 46, dmg: 12, rate: 2.6, coin: 15, cost: 2.6, w: 1.2, beh: 'shoot', crit: [.5, .12], muz: [.03, .68], shot: 'bullet' },
   shield_brute: { name: 'Shield Brute', h: 66, hp: 50, spd: 44, dmg: 10, rate: 1.7, coin: 15, cost: 2.6, w: 1.2, beh: 'shoot', crit: [.62, .15], shield: 90, muz: [.3, .62], shot: 'bullet', stopR: [110, 220] },
   bomb_runner: { name: 'Bomb Runner', h: 60, hp: 26, spd: 92, dmg: 55, rate: 1, coin: 10, cost: 2, w: 1.1, beh: 'suicide', crit: [.45, .3] },
   mech_walker: { name: 'Mech Walker', h: 80, hp: 190, spd: 34, dmg: 28, rate: 1.4, coin: 28, cost: 4.4, w: .9, beh: 'melee', crit: [.45, .3] },
