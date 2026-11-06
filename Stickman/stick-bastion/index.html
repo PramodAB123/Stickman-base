@@ -18,14 +18,14 @@
 <div id="stage">
   <canvas id="cv"></canvas>
   <div id="hud" class="hidden">
-    <div class="hbox" id="hpBox"><span class="hpIc">🏰</span><div class="lbl"><span>BASE HP</span><span id="hpTxt">400</span></div><div class="bar"><i id="hpFill"></i></div></div>
+    <div class="hbox" id="hpBox"><span class="hpIc" data-ic="castle"></span><div class="lbl"><span>BASE HP</span><span id="hpTxt">400</span></div><div class="bar"><i id="hpFill"></i></div></div>
     <div class="hbox" id="waveBox"><div id="waveTxt">WAVE 1</div><div id="waveSub"></div><div class="bar"><i id="waveFill"></i></div></div>
     <div class="hbox" id="coinBox"><span class="coin"></span><span id="coinTxt">0</span></div>
-    <button class="ibtn pe" id="speedBtn" aria-label="Speed up">▶▶</button>
+    <button class="ibtn pe" id="speedBtn" aria-label="Speed up">▶︎▶︎</button>
     <button class="ibtn pe" id="pauseBtn" aria-label="Pause">❚❚</button>
-    <button id="baseBtn" class="round pe" aria-label="Base upgrades"><span>🏰</span><small>BASE</small></button>
-    <div id="breakBar" class="pe hidden"><div class="nw"><span class="clk">⏱</span><span class="nwt"><small>NEXT WAVE IN</small><span><b id="breakT">10</b>s</span></span></div><button id="callBtn">CALL NOW ▶ <small id="callBonus"></small></button></div>
-    <button id="strikeBtn" class="round pe hidden" aria-label="Airstrike"><span>✈</span><small>STRIKE</small></button>
+    <button id="baseBtn" class="round pe" aria-label="Base upgrades"><span data-ic="castle"></span><small>BASE</small></button>
+    <div id="breakBar" class="pe hidden"><div class="nw"><span class="clk" data-ic="clock"></span><span class="nwt"><small>NEXT WAVE IN</small><span><b id="breakT">10</b>s</span></span></div><button id="callBtn">CALL NOW ▶︎ <small id="callBonus"></small></button></div>
+    <button id="strikeBtn" class="round pe hidden" aria-label="Airstrike"><span data-ic="plane"></span><small>STRIKE</small></button>
   </div>
   <div id="slotPop" class="pop hidden"></div>
   <div id="basePop" class="pop hidden" style="left:.8em;bottom:6.2em"></div>
@@ -37,7 +37,7 @@
       <div class="chips">
         <div class="chip" title="Credits"><span class="crc">C</span><b id="crTxt">0</b></div>
         <div class="chip" title="Stars"><span class="sti">★</span><b id="stTxt">0/48</b></div>
-        <button class="hb" id="sndBtn1" aria-label="Sound">🔊</button>
+        <button class="hb" id="sndBtn1" aria-label="Sound"></button>
       </div>
     </div>
     <div class="tab" id="tab_career">
@@ -62,7 +62,7 @@
       <button data-tab="premium" class="pnav"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M9.5 4L8 9l4 11 4-11-1.5-5"/></svg>PREMIUM</button>
       <button data-tab="survival"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2-2.6-3.6-4-5.5-4a4 4 0 000 8c1.9 0 3.5-1.4 5.5-4s3.6-4 5.5-4a4 4 0 010 8c-1.9 0-3.5-1.4-5.5-4z"/></svg>SURVIVAL</button>
     </nav>
-    <button id="playBtn" class="playbig">PLAY <b>▶</b></button>
+    <button id="playBtn" class="playbig">PLAY <b>▶︎</b></button>
   </div>
 
   <div id="win" class="screen dim hidden">
@@ -72,7 +72,7 @@
       <div class="stars3" id="winStars"></div>
       <div class="wobj" id="winObj"></div>
       <div class="wcr">Credits earned <span class="crc">C</span> <b id="winCr">0</b></div>
-      <div><button class="btn" id="nextBtn">NEXT LEVEL ▶</button><button class="btn alt" id="retryBtn">⟲ RETRY</button><button class="btn alt" id="mapBtn">MAP</button></div>
+      <div><button class="btn" id="nextBtn">NEXT LEVEL ▶︎</button><button class="btn alt" id="retryBtn">⟲ RETRY</button><button class="btn alt" id="mapBtn">MAP</button></div>
     </div>
   </div>
 
@@ -80,8 +80,8 @@
     <div class="panel">
       <h1 class="title" style="font-size:3em">PAUSED</h1>
       <div style="margin-top:1em">
-        <button class="btn" id="resumeBtn">▶ RESUME</button><br>
-        <button class="btn alt small" id="sndBtn2">🔊 Sound: On</button>
+        <button class="btn" id="resumeBtn">▶︎ RESUME</button><br>
+        <button class="btn alt small" id="sndBtn2">Sound: On</button>
         <button class="btn alt small" id="quitBtn">⟲ Main menu</button>
       </div>
     </div>
@@ -100,8 +100,9 @@
     </div>
   </div>
 </div>
-<div id="rotate"><div class="phn">📱</div><div>Turn your phone sideways for the best view.</div><button class="btn small" id="rotOk">Play anyway</button></div>
+<div id="rotate"><div>Turn your phone sideways for the best view.</div><button class="btn small" id="rotOk">Play anyway</button></div>
 <script src="js/core.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/music.js"></script>
 <script src="js/data.js"></script>

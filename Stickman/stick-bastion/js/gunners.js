@@ -148,7 +148,7 @@ function drawGunner(g,s){
   g.save();if(s.ko)g.globalAlpha=.42;
   drawGunnerBody(g,s);g.restore();
   if(s.boost>0&&Math.random()<.3)S.parts.push({type:'spark',x:s.x+rand(-20,20),y:fy-rand(20,80),vx:rand(-30,30),vy:rand(-120,-40),life:.25,max:.25,g:0,col:'#ffe066'});
-  if(s.ko){g.font='900 15px system-ui,Arial';g.textAlign='center';g.fillStyle='#ff6b5b';g.fillText('✖ KO',s.x,fy-96)}
+  if(s.ko){g.font='900 15px system-ui,Arial';g.textAlign='center';g.fillStyle='#ff6b5b';g.fillText('KO',s.x,fy-96)}
   if(s.hp<s.maxHp){const w=40,x=s.x-w/2,y=fy+22,r=s.hp/s.maxHp;g.fillStyle='rgba(10,5,15,.8)';g.fillRect(x-1.5,y-1.5,w+3,6);g.fillStyle=s.ko?'#ff4a3a':r>.5?'#5be27f':r>.25?'#ffc83a':'#ff4a3a';g.fillRect(x,y,w*r,3);
     if(s.hurt>0){s.hurt-=1/60;g.fillStyle='rgba(255,255,255,.6)';g.fillRect(x,y,w*r,3)}}
 }

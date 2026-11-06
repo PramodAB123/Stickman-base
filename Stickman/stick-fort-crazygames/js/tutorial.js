@@ -9,7 +9,8 @@
 const TUT={on:false,i:0,slot:1,t0:0};
 const TSTEPS=[
   {txt:'TAP ON THE POST TO DEPLOY A GUNNER',at:()=>slotPt(TUT.slot,-34),done:()=>{if(S.popSlot!=null&&!S.slots[S.popSlot].w){TUT.slot=S.popSlot;return true}return false}},
-  {txt:'PICK THE RAPID BLASTER',at:()=>elPt('#slotPop .wopt[data-w="blaster"]'),done:()=>!!S.slots[TUT.slot].w,
+  // each post sells its own guns, so point at the cheapest one offered at this post
+  {txt:()=>'PICK THE '+WMAP[tutGun()].name.toUpperCase(),at:()=>elPt('#slotPop .wopt[data-w="'+tutGun()+'"]'),done:()=>!!S.slots[TUT.slot].w,
     enter:()=>{if(S.popSlot!==TUT.slot)openSlot(TUT.slot)}},
   {txt:'NOW UPGRADE YOUR GUNNER BY TAPPING ON HIM',at:()=>slotPt(TUT.slot,-50),done:()=>S.popSlot===TUT.slot&&!!$('gpHp'),
     enter:()=>{closePops();S.coins=Math.max(S.coins,upCost(WMAP[S.slots[TUT.slot].w],S.slots[TUT.slot].lvl)+5)}},
@@ -24,13 +25,14 @@ const TSTEPS=[
   {txt:'TAP CALL NOW TO START THE FIRST WAVE',at:()=>elPt('#callBtn'),done:()=>S.waveActive},
 ];
 const tutOn=()=>TUT.on;
+const tutGun=()=>(POST_GUNS[TUT.slot]||POST_GUNS[0])[0];
 function tutStart(){TUT.on=true;TUT.slot=S.slots.findIndex(s=>!s.w);if(TUT.slot<0)TUT.slot=1;S.banner=null;$('tut').classList.remove('hidden');tutGo(0)}
 function tutEnd(){TUT.on=false;$('tut').classList.add('hidden')}
 function tutOpen(){if(S.popSlot!==TUT.slot)openSlot(TUT.slot)}
 function tutGo(i){
   if(i>=TSTEPS.length){tutEnd();return}
   TUT.i=i;TUT.t0=performance.now();const st=TSTEPS[i];if(st.enter)st.enter();
-  const c=$('tutCap');c.textContent=st.txt;c.classList.toggle('win',!!st.wait);c.style.animation='none';void c.offsetWidth;c.style.animation='';
+  const c=$('tutCap');c.textContent=typeof st.txt==='function'?st.txt():st.txt;c.classList.toggle('win',!!st.wait);c.style.animation='none';void c.offsetWidth;c.style.animation='';
   if(i>0)SND.play(st.wait?'clear':'click');
   tutTick();
 }

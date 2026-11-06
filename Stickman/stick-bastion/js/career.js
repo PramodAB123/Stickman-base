@@ -1,10 +1,10 @@
 'use strict';
 // Career mode: chapters, levels, stars, credits and permanent upgrades (saved in this browser)
 const CHAPTERS = [
-  { id: 'desert', name: 'Desert Outpost', icon: '🌵', col: '#ffb347' },
-  { id: 'industrial', name: 'Frozen Foundry', icon: '❄️', col: '#8fdcff' },
-  { id: 'nature', name: 'Jungle Citadel', icon: '🌿', col: '#73e38c' },
-  { id: 'cyber', name: 'Inferno Core', icon: '🔥', col: '#ff7a3a' },
+  { id: 'desert', name: 'Desert Outpost', icon: '', col: '#ffb347' },
+  { id: 'industrial', name: 'Frozen Foundry', icon: '', col: '#8fdcff' },
+  { id: 'nature', name: 'Jungle Citadel', icon: '', col: '#73e38c' },
+  { id: 'cyber', name: 'Inferno Core', icon: '', col: '#ff7a3a' },
   { id: 'volcanic', name: 'Volcanic Wastelands', icon: '', col: '#ff9a4a' },
   { id: 'crystal', name: 'Crystal Caverns', icon: '', col: '#c48cff' },
 ];
@@ -21,11 +21,11 @@ for (let k = 1; k <= NLV; k++) {
 function levelEnemies(L) { const top = L.off + L.waves, ord = id => UNLOCK[id] != null ? UNLOCK[id] : 100 + LATE[id].sv; const ids = Object.keys(UNLOCK).filter(id => UNLOCK[id] <= top).concat(Object.keys(LATE).filter(id => L.ch >= LATE[id].ch)).sort((a, b) => ord(b) - ord(a)).slice(0, 4); if (L.boss) ids.unshift(L.boss); return ids.slice(0, 4) }
 
 const UPG = [
-  { id: 'chest', ic: '💰', name: 'War Chest', desc: '+40 starting coins', max: 5, cost: [80, 160, 280, 440, 650] },
-  { id: 'wall', ic: '🧱', name: 'Thick Walls', desc: '+10% base HP', max: 5, cost: [100, 200, 340, 520, 760] },
-  { id: 'dmg', ic: '💥', name: 'Hot Rounds', desc: '+6% gun damage', max: 5, cost: [120, 240, 400, 600, 880] },
-  { id: 'rate', ic: '⚡', name: 'Fast Hands', desc: '+5% fire rate', max: 5, cost: [120, 240, 400, 600, 880] },
-  { id: 'bounty', ic: '🪙', name: 'Bounty Hunter', desc: '+8% coins per kill', max: 5, cost: [90, 180, 320, 500, 720] },
+  { id: 'chest', ic: IC.bag, name: 'War Chest', desc: '+40 starting coins', max: 5, cost: [80, 160, 280, 440, 650] },
+  { id: 'wall', ic: IC.bricks, name: 'Thick Walls', desc: '+10% base HP', max: 5, cost: [100, 200, 340, 520, 760] },
+  { id: 'dmg', ic: IC.boom, name: 'Hot Rounds', desc: '+6% gun damage', max: 5, cost: [120, 240, 400, 600, 880] },
+  { id: 'rate', ic: IC.bolt, name: 'Fast Hands', desc: '+5% fire rate', max: 5, cost: [120, 240, 400, 600, 880] },
+  { id: 'bounty', ic: IC.coins, name: 'Bounty Hunter', desc: '+8% coins per kill', max: 5, cost: [90, 180, 320, 500, 720] },
 ];
 const CAR = Object.assign({ stars: Array(NLV).fill(0), cr: 0, up: {}, sel: 0, own: [] }, store.get('career', {}));
 if (!Array.isArray(CAR.own)) CAR.own = [];

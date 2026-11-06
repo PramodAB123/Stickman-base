@@ -93,7 +93,7 @@ function renderPanel(){
     <div class="psec">REWARDS</div>
     <div class="prw"><div><span class="crc">C</span>×${st?Math.round(L.reward*.35):L.reward}</div><div><span class="sti">★</span>+25 each</div></div>
     <div class="pobj">${OBJ.map((o,j)=>`<div class="${j<st?'on':''}"><i>★</i>${o}</div>`).join('')}</div>
-    ${lk?'<div class="plock">'+IC.lock+' '+(i%4===0&&!chapterUnlocked(L.ch)?'Need '+CH_NEED+'★ in Chapter '+L.ch+' ('+chStars(L.ch-1)+'/12)':'Clear level '+i+' to unlock')+'</div>':''}`;
+    ${lk?'<div class="plock">'+IC.lock+' '+(!chapterUnlocked(L.ch)?'Need '+CH_NEED+'★ in Chapter '+L.ch+' ('+chStars(L.ch-1)+'/12)':'Clear level '+i+' to unlock')+'</div>':''}`;
   $('playBtn').disabled=lk&&hubTab==='career';
 }
 // ---------- upgrades ----------
