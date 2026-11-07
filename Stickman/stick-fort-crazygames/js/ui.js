@@ -134,8 +134,8 @@ $('baseBtn').addEventListener('click',()=>{SND.unlock();const p=$('basePop');if(
 function showOver(){
   S.mode='over';hudHide();const L=S.career;
   const survived=Math.max(0,(L?careerWave():S.wave)-1);
-  if(!L){const best=Math.max(store.get('best',0),survived);store.set('best',best);$('oBest').textContent='Best: '+best+' wave'+(best===1?'':'s')}
-  else $('oBest').textContent='Level '+L.k+' · '+survived+' of '+L.waves+' waves cleared';
+  if(!L&&!S.chal){const best=Math.max(store.get('best',0),survived);store.set('best',best);$('oBest').textContent='Best: '+best+' wave'+(best===1?'':'s')}
+  else if(L)$('oBest').textContent='Level '+L.k+' · '+survived+' of '+L.waves+' waves cleared';
   $('oWaves').textContent=survived;$('oKills').textContent=S.kills;$('oHeads').textContent=S.heads;
   $('againBtn').textContent=L?'⟲ RETRY':'⟲ PLAY AGAIN';$('menuBtn').textContent=L?'MAP':'MENU';
   showScreen('over');

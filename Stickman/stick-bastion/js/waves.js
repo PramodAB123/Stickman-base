@@ -44,7 +44,7 @@ function updateWave(dt){
     if(S.career&&careerWave()>=S.career.waves){careerWin();return}
     const bonus=20+S.wave*15;S.coins+=bonus;S.breakT=12;
     S.banner={text:'WAVE CLEARED!',sub:'+'+bonus+' bonus coins · upgrade your gunners!',t:0,col:'#5be27f'};SND.play('clear');
-    if(!S.career)store.set('best',Math.max(store.get('best',0),S.wave));
+    if(!S.career&&!S.chal)store.set('best',Math.max(store.get('best',0),S.wave));
   }
 }
 function startDying(){

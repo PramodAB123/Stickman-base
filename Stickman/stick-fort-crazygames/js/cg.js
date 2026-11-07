@@ -85,7 +85,7 @@ const CG = {
 
 // boot: start the SDK (max 6 s wait), then load the game scripts in order
 (function () {
-  const files = ['core', 'icons', 'audio', 'music', 'data', 'enemies', 'state', 'gunners', 'combat', 'waves', 'career', 'render', 'ui', 'mapart', 'menu', 'basetray', 'tutorial', 'hudskin', 'meta', 'main'];
+  const files = ['core', 'icons', 'audio', 'music', 'data', 'enemies', 'state', 'gunners', 'combat', 'waves', 'career', 'render', 'ui', 'mapart', 'menu', 'basetray', 'tutorial', 'hudskin', 'meta', 'survival', 'main'];
   let started = false;
   const go = () => {
     if (started) return; started = true;

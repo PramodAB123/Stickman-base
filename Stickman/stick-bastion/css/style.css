@@ -607,3 +607,32 @@ svg.ic{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none
 #stage button.btn.small>span.crc{font-size:max(0.85em,9px)}
 #hpBox .hpIc svg.ic{width:1.6em;height:1.6em}
 .hb svg.ic{width:1.25em;height:1.25em}
+
+/* survival rewards (js/survival.js): milestones row + daily challenge card + game-over note */
+.surv .maps{grid-template-columns:repeat(3,1fr);margin:.5em 0 .1em}
+.surv .mapc img{height:3.2em}
+.surv .best{margin-top:.35em}
+#svExtra{text-align:left;margin-top:.5em;display:flex;flex-direction:column;gap:.45em}
+.svms small,.svch small{display:block;font:italic 800 .72em var(--hf,inherit);letter-spacing:.08em;color:#9fb2e6}
+.msr{display:grid;grid-template-columns:repeat(5,1fr);gap:.3em;margin-top:.25em}
+.msc{border:2px solid var(--line);border-radius:.55em;background:rgba(255,255,255,.05);padding:.25em .2em;text-align:center;line-height:1.15}
+.msc b{display:flex;align-items:center;justify-content:center;gap:.15em;font:italic 900 .8em var(--hf,inherit);letter-spacing:.03em;color:#dfe6ff}
+.msc b svg{width:1em;height:1em;fill:none;stroke:#5be27f;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.msc>span{font-weight:800;font-size:.74em;color:var(--gold)}
+.msc.next{border-color:#4fa9e8;background:rgba(79,169,232,.12)}
+.msc.done{border-color:rgba(91,226,127,.55);opacity:.8}
+.msc.done>span{color:#8fd8a4}
+.svp{margin:.3em 0 0!important;font-size:.74em;color:var(--dim)}
+.svch{display:flex;align-items:center;gap:.6em;padding:.5em .6em;border-radius:.7em;border:2px solid color-mix(in srgb,var(--gold) 55%,transparent);background:rgba(255,211,90,.07)}
+.svch .cht{flex:1;min-width:0;line-height:1.2}
+.svch .cht b{display:block;font:italic 900 1.15em var(--hf,inherit);letter-spacing:.04em;color:#ffd35a}
+.svch .cht>span{display:block;font-size:.8em;color:#dfe6ff}
+.svch .cht em{display:block;font-style:normal;font-size:.72em;color:var(--dim);margin-top:.15em}
+.svch .btn.small{margin:0;padding:.5em 1em;flex:none}
+.svnote{display:inline-flex;flex-direction:column;gap:.15em;margin-top:.5em;padding:.4em .8em;border-radius:.6em;background:rgba(0,0,0,.25);border:1px solid rgba(120,150,230,.3);font-size:.85em}
+.svnote div{display:flex;justify-content:space-between;gap:1.4em}
+.svnote span{color:#b9c7ee;font-weight:700}
+.svnote b{color:#ffd23a}
+#stage .svms small,#stage .svch small{font-size:max(.72em,9px)}
+#stage .msc>span,#stage .svp,#stage .svch .cht em{font-size:max(.72em,9px)}
+@container (max-width:900px){.surv>p{display:none}.surv .mapc img{height:2.3em}.surv .svp{display:none}.surv h2{font-size:1.2em}}
